@@ -1,0 +1,24 @@
+{
+  "name": "icynet.eu",
+  "version": "0.0.1-alpha1",
+  "description": "Icy Network web server",
+  "main": "icynet.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IcyNet/IcyNet.eu.git"
+  },
+  "keywords": [
+    "website",
+    "community",
+    "authentication"
+  ],
+  "author": "Icy Network",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/IcyNet/IcyNet.eu/issues"
+  },
+  "homepage": "https://github.com/IcyNet/IcyNet.eu#readme"
+}
