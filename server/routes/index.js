@@ -56,6 +56,29 @@ router.get('/register', wrap(async (req, res) => {
   res.render('register')
 }))
 
+router.get('/user/two-factor', wrap(async (req, res) => {
+  if (!req.session.user) return res.redirect('/login')
+  let twoFaEnabled = await API.User.Login.totpTokenRequired(req.session.user)
+
+  if (twoFaEnabled) return res.redirect('/')
+  let newToken = await API.User.Login.totpAquire(req.session.user)
+  
+  res.locals.uri = newToken
+  res.render('totp')
+}))
+
+router.get('/user/two-factor/disable', wrap(async (req, res) => {
+  if (!req.session.user) return res.redirect('/login')
+  let twoFaEnabled = await API.User.Login.totpTokenRequired(req.session.user)
+
+  if (!twoFaEnabled) return res.redirect('/')
+  res.render('password')
+}))
+
+router.get('/login/verify', wrap(async (req, res) => {
+  res.render('totp-check')
+}))
+
 /*
   =================
     POST HANDLING
@@ -67,6 +90,80 @@ function formError (req, res, error, path) {
   req.flash('message', {error: true, text: error})
   res.redirect(path || parseurl(req).path)
 }
+
+router.post('/user/two-factor', wrap(async (req, res) => {
+  if (!req.body.code) {
+    return formError(req, res, 'You need to enter the code.')
+  }
+
+  if (req.body.csrf !== req.session.csrf) {
+    return formError(req, res, 'Invalid session! Try reloading the page.')
+  }
+
+  let verified = await API.User.Login.totpCheck(req.session.user, req.body.code)
+  if (!verified) {
+    return formError(req, res, 'Try again!')
+  }
+
+  res.redirect('/')
+}))
+
+router.post('/user/two-factor/disable', wrap(async (req, res) => {
+  if (req.body.csrf !== req.session.csrf) {
+    return formError(req, res, 'Invalid session! Try reloading the page.')
+  }
+
+  if (!req.body.password) {
+    return formError(req, res, 'Please enter your password.')
+  }
+
+  let purge = await API.User.Login.purgeTotp(req.session.user, req.body.password)
+  if (!purge) {
+    return formError(req, res, 'Invalid password.')
+  }
+
+  res.redirect('/')
+}))
+
+router.post('/login/verify', wrap(async (req, res) => {
+  if (req.session.totp_check === null) return res.redirect('/login')
+  if (!req.body.code && !req.body.recovery) {
+    return formError(req, res, 'You need to enter the code.')
+  }
+
+  if (req.body.csrf !== req.session.csrf) {
+    return formError(req, res, 'Invalid session! Try reloading the page.')
+  }
+
+  let totpCheck = await API.User.Login.totpCheck(req.session.totp_check, req.body.code, req.body.recovery || false)
+  if (!totpCheck) {
+    return formError(req, res, 'Invalid code!')
+  }
+
+  let user = await API.User.get(req.session.totp_check)
+  delete req.session.totp_check
+
+  // Set session
+  req.session.user = {
+    id: user.id,
+    username: user.username,
+    display_name: user.display_name,
+    email: user.email,
+    avatar_file: user.avatar_file
+  }
+
+  let uri = '/'
+  if (req.session.redirectUri) {
+    uri = req.session.redirectUri
+    delete req.session.redirectUri
+  }
+
+  if (req.query.redirect) {
+    uri = req.query.redirect
+  }
+
+  res.redirect(uri)
+}))
 
 router.post('/login', wrap(async (req, res) => {
   if (!req.body.username || !req.body.password) {
@@ -86,7 +183,12 @@ router.post('/login', wrap(async (req, res) => {
   if (user.activated === 0) return formError(req, res, 'Please activate your account first.')
   if (user.locked === 1) return formError(req, res, 'This account has been locked.')
 
-  // TODO: TOTP checks
+  let totpRequired = await API.User.Login.totpTokenRequired(user)
+  if (totpRequired) {
+    req.session.totp_check = user.id
+    return res.redirect('/login/verify')
+  }
+
   // TODO: Ban checks
 
   // Set session
@@ -173,17 +275,6 @@ router.post('/register', wrap(async (req, res) => {
   res.redirect('/login')
 }))
 
-router.get('/activate/:token', wrap(async (req, res) => {
-  if (req.session.user) return res.redirect('/login')
-  let token = req.params.token
-
-  let success = await API.User.Login.activationToken(token)
-  if (!success) return formError(req, res, 'Unknown or invalid activation token')
-
-  req.flash('message', {error: false, text: 'Your account has been activated! You may now log in.'})
-  res.redirect('/login')
-}))
-
 /*
   =========
     OTHER
@@ -196,6 +287,17 @@ router.get('/logout', wrap(async (req, res) => {
   }
 
   res.redirect('/')
+}))
+
+router.get('/activate/:token', wrap(async (req, res) => {
+  if (req.session.user) return res.redirect('/login')
+  let token = req.params.token
+
+  let success = await API.User.Login.activationToken(token)
+  if (!success) return formError(req, res, 'Unknown or invalid activation token')
+
+  req.flash('message', {error: false, text: 'Your account has been activated! You may now log in.'})
+  res.redirect('/login')
 }))
 
 router.use((err, req, res, next) => {

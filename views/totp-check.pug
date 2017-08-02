@@ -1,0 +1,21 @@
+extends layout.pug
+block title
+	|Icy Network - Log In - Verification Required
+
+block body
+	.wrapper
+		.boxcont
+			.box#totpcheck
+				h1 Enter Code
+				small.descr This user has Two Factor Authentication enabled. Enter the code to log in.
+				if message
+					if message.error
+						.message.error
+					else
+						.message
+					span #{message.text}
+				form#loginForm(method="POST", action="")
+					input(type="hidden", name="csrf", value=csrf)
+					label(for="code") Code
+					input(type="text", name="code", id="code")
+					input(type="submit", value="Log in")

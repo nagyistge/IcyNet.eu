@@ -9,7 +9,7 @@ exports.up = function(knex, Promise) {
       table.string('email').notNullable()
       table.string('avatar_file')
 
-      table.text('password').notNullable()
+      table.text('password')
 
       table.boolean('activated').defaultTo(false)
       table.boolean('locked').defaultTo(false)

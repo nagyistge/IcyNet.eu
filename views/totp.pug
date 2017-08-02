@@ -1,0 +1,30 @@
+extends layout.pug
+block title
+	|Icy Network - Activate Authenticator
+
+block body
+	.wrapper
+		.boxcont
+			.box#login
+				.left
+					h1 Two Factor Authentication
+					if message
+						if message.error
+							.message.error
+						else
+							.message
+						span #{message.text}
+					img.qr(src="//api.qrserver.com/v1/create-qr-code/?data=" + uri)
+					form#totpForm(method="POST", action="")
+						input(type="hidden", name="csrf", value=csrf)
+						label(for="code") Enter the Code
+						input(type="text", name="code", id="code")
+						input(type="submit", value="Enable Now")
+				.right
+					h3 How to use
+					ol
+						li Scan the QR Code with your authenticator app
+						li Enter the one-time code given to you
+						li You will now be asked for a code every time you log in
+					h3 Authenticator app
+					p We recommend using Google Authenticator
