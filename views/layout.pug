@@ -1,0 +1,49 @@
+doctype html
+html
+	head
+		meta(charset="utf8")
+		meta(name="viewport", content="width=device-width, initial-scale=1")
+		link(rel="stylesheet", type="text/css", href="/style/main.css")
+		link(rel="stylesheet", type="text/css", href="https://fonts.googleapis.com/css?family=Open+Sans")
+		link(rel="stylesheet", type="text/css", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css")
+		script(src="/script/main.js")
+		title
+			block title
+	body
+		block banner
+			.banner
+				.logo
+					.part1 Icy
+					.part2 Network
+		block nav
+			.anchor
+			nav.navigator
+				ul
+					li.hidden#navlogo
+						a(href="/")
+							.logo.small
+								.part1 Icy
+								.part2 Network
+					li.fullview
+						a.scroll(href="/#home") Home
+					li.fullview
+						a.scroll(href="/#news") News
+				ul.fullview.floating
+					if user
+						li#user
+							a(href="/user/manage") #{user.display_name}
+						li
+							a(href="/logout") Log out
+					else
+						li
+							a(href="/login") Log in
+				ul.mobview.floating
+					li
+						a#mobile(href="#")
+							i.fa.fa-fw.fa-bars
+		block body
+		block footer
+			footer
+				span.copyright &copy; 2017 - Icy Network - Some Rights Reserved
+				span.copyright Designed by 
+					a(href="https://lunasqu.ee") LunaSquee

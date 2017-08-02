@@ -1,0 +1,33 @@
+extends layout.pug
+block title
+	|Icy Network - Register
+
+block body
+	.wrapper
+		.boxcont
+			.box#login
+				.left
+					h1 Create a new account
+					if message
+						if message.error
+							.message.error
+						else
+							.message
+						span #{message.text}
+					form#loginForm(method="POST", action="")
+						input(type="hidden", name="csrf", value=csrf)
+						label(for="username") Username
+						input(type="text", name="username", id="username")
+						label(for="display_name") Display Name
+						input(type="text", name="display_name", id="display_name")
+						label(for="email") Email Address
+						input(type="email", name="email", id="email")
+						label(for="password") Password
+						input(type="password", name="password", id="password")
+						label(for="password_repeat") Repeat Password
+						input(type="password", name="password_repeat", id="password_repeat")
+						div#repeatcheck(style="display: none")
+						input(type="submit", value="Register")
+					a#create(href="/login") Log in with an existing account
+				.right
+					h3 More options
