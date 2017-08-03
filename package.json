@@ -44,6 +44,7 @@
     "mysql": "^2.13.0",
     "nodemailer": "^4.0.1",
     "notp": "^2.0.3",
+    "oauth-libre": "^0.9.17",
     "objection": "^0.8.4",
     "pug": "^2.0.0-rc.3",
     "stylus": "^0.54.5",

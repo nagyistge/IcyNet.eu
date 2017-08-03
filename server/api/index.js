@@ -154,6 +154,11 @@ const API = {
       },
       totpAquire: async function (user) {
         user = await API.User.ensureObject(user)
+
+        // Do not allow totp for users who have registered using an external service
+        if (!user.password || user.password === '') return null
+
+        // Get existing tokens for the user and delete them if found
         let getToken = await models.TotpToken.query().where('user_id', user.id)
         if (getToken && getToken.length) {
           await models.TotpToken.query().delete().where('user_id', user.id)
@@ -163,6 +168,7 @@ const API = {
           user_id: user.id,
           token: API.Hash(16),
           recovery_code: API.Hash(8),
+          activated: 0,
           created_at: new Date()
         }
 
@@ -214,6 +220,11 @@ const API = {
         console.log(activationToken)
         return {error: null, user: user}
       }
+    }
+  },
+  External: {
+    serviceCallback: async function () {
+      
     }
   }
 }

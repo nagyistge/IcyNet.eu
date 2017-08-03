@@ -34,4 +34,33 @@ $(document).ready(function () {
         scrollTop: dest - $('.navigator').innerHeight()
     }, 1000, 'swing')
   })
+
+  window.checkLoginState = function () {
+    FB.getLoginStatus(function(response) {
+      console.log(response)
+      $.ajax({
+        type: 'post',
+        url: '/api/external/facebook/callback',
+        dataType: 'json',
+        data: response,
+        success: (data) => {
+          if (data.error) {
+            console.log(data)
+            $('.message').addClass('error')
+            $('.message span').text(data.error)
+            return
+          }
+
+          if (data.redirect) {
+            return window.location.href = data.redirect
+          }
+
+          window.location.reload()
+        }
+      }).fail(function() {
+        $('.message').addClass('error')
+        $('.message span').text('An error occured.')
+      })
+    })
+  }
 })

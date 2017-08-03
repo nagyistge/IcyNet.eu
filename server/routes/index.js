@@ -4,6 +4,8 @@ import config from '../../scripts/load-config'
 import wrap from '../../scripts/asyncRoute'
 import API from '../api'
 
+import apiRouter from './api'
+
 let router = express.Router()
 
 router.use(wrap(async (req, res, next) => {
@@ -38,6 +40,14 @@ router.get('/login', wrap(async (req, res) => {
     return res.redirect(uri)
   }
 
+  if (config.twitter && config.twitter.api) {
+    res.locals.twitter_auth = true
+  }
+
+  if (config.facebook && config.facebook.client) {
+    res.locals.facebook_auth = config.facebook.client
+  }
+
   res.render('login')
 }))
 
@@ -52,6 +62,13 @@ router.get('/register', wrap(async (req, res) => {
   }
 
   res.locals.formkeep = dataSave
+  if (config.twitter && config.twitter.api) {
+    res.locals.twitter_auth = true
+  }
+
+  if (config.facebook && config.facebook.client) {
+    res.locals.facebook_auth = config.facebook.client
+  }
 
   res.render('register')
 }))
@@ -59,9 +76,10 @@ router.get('/register', wrap(async (req, res) => {
 router.get('/user/two-factor', wrap(async (req, res) => {
   if (!req.session.user) return res.redirect('/login')
   let twoFaEnabled = await API.User.Login.totpTokenRequired(req.session.user)
-
   if (twoFaEnabled) return res.redirect('/')
+
   let newToken = await API.User.Login.totpAquire(req.session.user)
+  if (!newToken) return res.redirect('/')
   
   res.locals.uri = newToken
   res.render('totp')
@@ -149,7 +167,8 @@ router.post('/login/verify', wrap(async (req, res) => {
     username: user.username,
     display_name: user.display_name,
     email: user.email,
-    avatar_file: user.avatar_file
+    avatar_file: user.avatar_file,
+    session_refresh: Date.now() + 1800000 // 30 minutes
   }
 
   let uri = '/'
@@ -197,7 +216,8 @@ router.post('/login', wrap(async (req, res) => {
     username: user.username,
     display_name: user.display_name,
     email: user.email,
-    avatar_file: user.avatar_file
+    avatar_file: user.avatar_file,
+    session_refresh: Date.now() + 1800000 // 30 minutes
   }
 
   let uri = '/'
@@ -299,6 +319,8 @@ router.get('/activate/:token', wrap(async (req, res) => {
   req.flash('message', {error: false, text: 'Your account has been activated! You may now log in.'})
   res.redirect('/login')
 }))
+
+router.use('/api', apiRouter)
 
 router.use((err, req, res, next) => {
   console.error(err)
