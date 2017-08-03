@@ -1,3 +1,5 @@
+import fs from 'fs'
+import path from 'path'
 import express from 'express'
 import parseurl from 'parseurl'
 import config from '../../scripts/load-config'
@@ -44,6 +46,10 @@ router.get('/login', wrap(async (req, res) => {
     res.locals.twitter_auth = true
   }
 
+  if (config.discord && config.discord.api) {
+    res.locals.discord_auth = true
+  }
+
   if (config.facebook && config.facebook.client) {
     res.locals.facebook_auth = config.facebook.client
   }
@@ -64,6 +70,10 @@ router.get('/register', wrap(async (req, res) => {
   res.locals.formkeep = dataSave
   if (config.twitter && config.twitter.api) {
     res.locals.twitter_auth = true
+  }
+
+  if (config.discord && config.discord.api) {
+    res.locals.discord_auth = true
   }
 
   if (config.facebook && config.facebook.client) {
@@ -103,10 +113,10 @@ router.get('/login/verify', wrap(async (req, res) => {
   =================
 */
 
-function formError (req, res, error, path) {
+function formError (req, res, error, redirect) {
   req.flash('formkeep', req.body || {})
   req.flash('message', {error: true, text: error})
-  res.redirect(path || parseurl(req).path)
+  res.redirect(redirect || parseurl(req).path)
 }
 
 router.post('/user/two-factor', wrap(async (req, res) => {
@@ -293,6 +303,24 @@ router.post('/register', wrap(async (req, res) => {
 
   req.flash('message', {error: false, text: 'Account created successfully! Please check your email for an activation link.'})
   res.redirect('/login')
+}))
+
+/*
+  =============
+    DOCUMENTS
+  =============
+*/
+
+const docsDir = path.join(__dirname, '../../documents')
+router.get('/docs/:name', wrap(async (req, res) => {
+  let doc = path.join(docsDir, req.params.name + '.html')
+  if (!fs.existsSync(docsDir) || !fs.existsSync(doc)) {
+    return res.status(404).end()
+  }
+
+  doc = fs.readFileSync(doc, {encoding: 'utf8'})
+
+  res.render('document', {doc: doc})
 }))
 
 /*
