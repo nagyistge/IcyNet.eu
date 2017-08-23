@@ -153,7 +153,7 @@ const API = {
         return true
       },
       totpAquire: async function (user) {
-        user = await API.User.ensureObject(user)
+        user = await API.User.ensureObject(user, ['password'])
 
         // Do not allow totp for users who have registered using an external service
         if (!user.password || user.password === '') return null

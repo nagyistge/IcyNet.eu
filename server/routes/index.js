@@ -1,15 +1,24 @@
 import fs from 'fs'
 import path from 'path'
 import express from 'express'
+import RateLimit from 'express-rate-limit'
 import parseurl from 'parseurl'
 import config from '../../scripts/load-config'
 import wrap from '../../scripts/asyncRoute'
+import http from '../../scripts/http'
 import API from '../api'
 
 import apiRouter from './api'
 import oauthRouter from './oauth2'
 
 let router = express.Router()
+
+let accountLimiter = new RateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10,
+  delayMs: 0,
+  message: 'Whoa, slow down there, buddy! You just hit our rate limits. Try again in 1 hour.'
+})
 
 router.use(wrap(async (req, res, next) => {
   let messages = req.flash('message')
@@ -30,11 +39,28 @@ router.use('/oauth2', oauthRouter)
     RENDER VIEWS
   ================
 */
-router.get('/', wrap(async (req, res) => {
+router.get('/', (req, res) => {
   res.render('index')
-}))
+})
 
-router.get('/login', wrap(async (req, res) => {
+// Add social media login buttons
+function extraButtons (req, res, next) {
+  if (config.twitter && config.twitter.api) {
+    res.locals.twitter_auth = true
+  }
+
+  if (config.discord && config.discord.api) {
+    res.locals.discord_auth = true
+  }
+
+  if (config.facebook && config.facebook.client) {
+    res.locals.facebook_auth = config.facebook.client
+  }
+
+  next()
+}
+
+router.get('/login', extraButtons, (req, res) => {
   if (req.session.user) {
     let uri = '/'
     if (req.session.redirectUri) {
@@ -45,22 +71,10 @@ router.get('/login', wrap(async (req, res) => {
     return res.redirect(uri)
   }
 
-  if (config.twitter && config.twitter.api) {
-    res.locals.twitter_auth = true
-  }
-
-  if (config.discord && config.discord.api) {
-    res.locals.discord_auth = true
-  }
-
-  if (config.facebook && config.facebook.client) {
-    res.locals.facebook_auth = config.facebook.client
-  }
-
   res.render('login')
-}))
+})
 
-router.get('/register', wrap(async (req, res) => {
+router.get('/register', extraButtons, (req, res) => {
   if (req.session.user) return res.redirect('/')
 
   let dataSave = req.flash('formkeep')
@@ -71,20 +85,13 @@ router.get('/register', wrap(async (req, res) => {
   }
 
   res.locals.formkeep = dataSave
-  if (config.twitter && config.twitter.api) {
-    res.locals.twitter_auth = true
-  }
 
-  if (config.discord && config.discord.api) {
-    res.locals.discord_auth = true
-  }
-
-  if (config.facebook && config.facebook.client) {
-    res.locals.facebook_auth = config.facebook.client
+  if (config.security.recaptcha && config.security.recaptcha.site_key) {
+    res.locals.recaptcha = config.security.recaptcha.site_key
   }
 
   res.render('register')
-}))
+})
 
 router.get('/user/two-factor', wrap(async (req, res) => {
   if (!req.session.user) return res.redirect('/login')
@@ -106,9 +113,9 @@ router.get('/user/two-factor/disable', wrap(async (req, res) => {
   res.render('password')
 }))
 
-router.get('/login/verify', wrap(async (req, res) => {
+router.get('/login/verify', (req, res) => {
   res.render('totp-check')
-}))
+})
 
 /*
   =================
@@ -117,7 +124,7 @@ router.get('/login/verify', wrap(async (req, res) => {
 */
 
 function formError (req, res, error, redirect) {
-  // Security measures
+  // Security measures: never store any passwords in any session
   if (req.body.password) {
     delete req.body.password
     if (req.body.password_repeat) {
@@ -254,7 +261,7 @@ router.post('/login', wrap(async (req, res) => {
   res.redirect(uri)
 }))
 
-router.post('/register', wrap(async (req, res) => {
+router.post('/register', accountLimiter, wrap(async (req, res) => {
   if (!req.body.username || !req.body.display_name || !req.body.password || !req.body.email) {
     return formError(req, res, 'Please fill in all the fields.')
   }
@@ -293,10 +300,27 @@ router.post('/register', wrap(async (req, res) => {
     return formError(req, res, 'Passwords do not match!')
   }
 
-  // TODO: Add reCaptcha
+  // 6th Check: reCAPTCHA (if configuration contains key)
+  if (config.security.recaptcha && config.security.recaptcha.site_key) {
+    if (!req.body['g-recaptcha-response']) return formError(req, res, 'Please complete the reCAPTCHA!')
+    
+    try {
+      let data = await http.POST('https://www.google.com/recaptcha/api/siteverify', {}, {
+        secret: config.security.recaptcha.secret_key,
+        response: req.body['g-recaptcha-response']
+      })
+
+      data = JSON.parse(data)
+      if (!data.success) {
+        return formError(req, res, 'Please complete the reCAPTCHA!')
+      }
+    } catch (e) {
+      console.error(e)
+      return formError(req, res, 'Internal server error')
+    }
+  }
 
   // Hash the password
-
   let hash = await API.User.Register.hashPassword(password)
 
   // Attempt to create the user
@@ -323,7 +347,7 @@ router.post('/register', wrap(async (req, res) => {
 */
 
 const docsDir = path.join(__dirname, '../../documents')
-router.get('/docs/:name', wrap(async (req, res) => {
+router.get('/docs/:name', (req, res) => {
   let doc = path.join(docsDir, req.params.name + '.html')
   if (!fs.existsSync(docsDir) || !fs.existsSync(doc)) {
     return res.status(404).end()
@@ -332,7 +356,7 @@ router.get('/docs/:name', wrap(async (req, res) => {
   doc = fs.readFileSync(doc, {encoding: 'utf8'})
 
   res.render('document', {doc: doc})
-}))
+})
 
 /*
   =========

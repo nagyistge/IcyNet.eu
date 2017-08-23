@@ -4,6 +4,10 @@ import model from '../../model'
 module.exports = async (req, res, client, scope, user, redirectUri, createAllowFuture) => {
   let codeValue = null
 
+  if (req.method === 'POST' && req.session.csrf && !(req.body.csrf && req.body.csrf === req.session.csrf)) {
+    throw new error.InvalidRequest('Invalid session')
+  }
+
   if (createAllowFuture) {
     if (!req.body || (typeof req.body['decision']) === 'undefined') {
       throw new error.InvalidRequest('No decision parameter passed')

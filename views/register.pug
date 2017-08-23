@@ -27,6 +27,9 @@ block body
 						label(for="password_repeat") Repeat Password
 						input(type="password", name="password_repeat", id="password_repeat")
 						div#repeatcheck(style="display: none")
+						if recaptcha
+							script(src='https://www.google.com/recaptcha/api.js')
+							.g-recaptcha(data-sitekey=recaptcha)
 						input(type="submit", value="Register")
 					a#create(href="/login") Log in with an existing account
 				.right

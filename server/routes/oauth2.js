@@ -1,6 +1,7 @@
 import express from 'express'
 import uapi from '../api'
 import OAuth2 from '../api/oauth2'
+import RateLimit from 'express-rate-limit'
 import config from '../../scripts/load-config'
 import wrap from '../../scripts/asyncRoute'
 
@@ -8,6 +9,14 @@ let router = express.Router()
 let oauth = new OAuth2()
 
 router.use(oauth.express())
+
+let oauthLimiter = new RateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 100,
+  delayMs: 0
+})
+
+router.use(oauthLimiter)
 
 function ensureLoggedIn (req, res, next) {
   if (req.session.user) {

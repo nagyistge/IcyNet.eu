@@ -1,11 +1,20 @@
 import express from 'express'
 import parseurl from 'parseurl'
+import RateLimit from 'express-rate-limit'
 import config from '../../scripts/load-config'
 import wrap from '../../scripts/asyncRoute'
 import API from '../api'
 import APIExtern from '../api/external'
 
 let router = express.Router()
+
+let apiLimiter = new RateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 100,
+  delayMs: 0
+})
+
+router.use(apiLimiter)
 
 // Turn things like 'key1[key2]': 'value' into key1: {key2: 'value'} because facebook
 function objectAssembler (insane) {
