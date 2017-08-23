@@ -18,7 +18,7 @@ block body
 						.info
 							.name= client.title
 							.description= client.description
-							a.url(href=client.url)= client.url
+							a.url(href=client.url, target="_blank", rel="nofollow")= client.url
 					form#loginForm(method="POST", action="")
 						input(type="hidden", name="csrf", value=csrf)
 						input(type="hidden", name="decision", value='1')
@@ -26,7 +26,7 @@ block body
 					form#loginForm(method="POST", action="")
 						input(type="hidden", name="csrf", value=csrf)
 						input(type="hidden", name="decision", value='0')
-						input(type="submit", value="Deny")
+						input.deny(type="submit", value="Deny")
 				.right
 					.haveaccess 
 						span This application can

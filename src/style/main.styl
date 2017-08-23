@@ -2,11 +2,15 @@ body
     margin: 0
     color: black
     font-family: sans-serif
-    background-color: #82fff4;
+    /*background-color: #82fff4;
     background-image: linear-gradient(-45deg, #80d7ff 25%, transparent 25.5%, transparent 50%, 
         #80d7ff 50.5%, #80d7ff 75%, transparent 75.5%, transparent)
     height: 100vh;
-    background-size: 50px 50px;
+    background-size: 50px 50px;*/
+    background: #6fefff
+    background: -moz-linear-gradient(top, #6fefff 0%, #53cbf1 51%, #05abe0 100%)
+    background: -webkit-linear-gradient(top, #6fefff 0%,#53cbf1 51%,#05abe0 100%)
+    background: linear-gradient(to bottom, #6fefff 0%,#53cbf1 51%,#05abe0 100%)
 
 a
     color: green
@@ -148,7 +152,7 @@ footer
 
 .wrapper
     overflow: hidden
-    height: 100vh
+    min-height: 100vh
 
 .document
     overflow: hidden
@@ -160,6 +164,38 @@ footer
     display: inline-block
     width: 60%
     font-size: 120%
+
+//.cssextend:hover > .flexview
+//    display: block
+//    left: 40%
+
+ul.flexview
+    position: fixed
+    right: 0
+    left: 100%
+    width: auto
+    top: 68px
+    bottom: 0
+    background-color: rgba(53, 53, 53, 0.8)
+    z-index: 1
+    overflow: hidden
+    transition: all 0.1s linear
+
+    .division
+        border-top: 1px solid #a7a7a7
+
+    li
+        display: block
+        min-width: 100px
+        a
+            display: block
+            padding: 5px 20px
+            color: #fff
+            font-weight: normal
+            text-transform: none
+    &.extended
+        display: block
+        left: 40%
 
 code
     white-space: pre
@@ -175,6 +211,7 @@ input:not([type="submit"])
     border: 1px solid #c1c1c1
     background-color: #f5f5f5
     box-shadow: inset 2px 2px 5px #ddd
+    transition: border 0.1s linear
 
 input[type="submit"]
     display: block
@@ -219,7 +256,7 @@ input[type="submit"]
             padding: 0 12px
 
 .twitterLogin
-    display: inline-block
+    display: block
     padding: 10px
     width: 215px
     margin: 5px 0
@@ -238,11 +275,11 @@ input[type="submit"]
         margin-left: 12px;
 
 .discordLogin
+    display: block;
     background-color: #99AAB5;
     width: 225px;
     height: 40px;
     padding: 5px 5px;
-    display: inline-block;
     border-radius: 5px;
     text-decoration: none
     span
@@ -317,6 +354,20 @@ input.authorize
     color: #fff
     border: 1px solid #2196F3
 
+input.deny
+    font-size: 160%
+    background-color: #f10
+    border: 1px solid #e00000
+    color: #fff
+
+input.invalid
+    border: 1px solid #f00
+    outline: red
+
+#repeatcheck
+    color: red
+    padding: 10px
+
 @media all and (max-width: 800px)
     .navigator
         padding: 0 10px
@@ -356,6 +407,13 @@ input.authorize
             margin-top: 0
         p
             font-size: 100%
+    .box
+        .left, .right
+            float: initial !important
+            display: block !important
+            border: 0 !important
+            width: fit-content !important
+            margin: auto
 
 @media all and (max-width: 500px)
     section

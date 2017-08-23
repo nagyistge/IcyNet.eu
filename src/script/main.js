@@ -1,6 +1,13 @@
 window.$ = require('jquery')
 
 $(document).ready(function () {
+  if (window.location.hash) {
+    let hash = window.location.hash 
+    if ($(hash).length) {
+      $(window).scrollTop($(hash).offset().top - $('.navigator').innerHeight() * 2)
+    }
+  }
+
   $(window).on('scroll', function() {
     if($(window).scrollTop() >= $('.banner').innerHeight()) {
       $('.anchor').css('height', $('.navigator').innerHeight() + 'px')
@@ -35,9 +42,42 @@ $(document).ready(function () {
     }, 1000, 'swing')
   })
 
+  $('#mobile').click(function (e) {
+    e.preventDefault()
+    $('.flexview').toggleClass('extended')
+  })
+
+  $('body').click(function(e) {
+    if (!$(e.target).is('#mobile') && !$(e.target).is('#mobile i') && $('.flexview').hasClass('extended')) {
+      $('.flexview').removeClass('extended')
+    }
+  })
+
+  if ($('#repeatcheck').length) {
+    function pwcheck (e) {
+      let pw = $('#password').val()
+      let pwa = $('#password_repeat').val()
+      if (pwa !== pw) {
+        $('#password_repeat').addClass('invalid')
+        $('#repeatcheck').show()
+        $('#repeatcheck').html('<span class="error">The passwords do not match.</span>')
+      } else {
+        $('#password_repeat').removeClass('invalid')
+        $('#repeatcheck').hide()
+        $('#repeatcheck').html('')
+      }
+    }
+
+    $('#password_repeat').on('keyup', pwcheck)
+    $('#password').on('keyup', function (e) {
+      if ($('#password_repeat').val()) {
+        pwcheck(e)
+      }
+    })
+  }
+
   window.checkLoginState = function () {
     FB.getLoginStatus(function(response) {
-      console.log(response)
       $.ajax({
         type: 'post',
         url: '/api/external/facebook/callback',
@@ -45,7 +85,6 @@ $(document).ready(function () {
         data: response,
         success: (data) => {
           if (data.error) {
-            console.log(data)
             $('.message').addClass('error')
             $('.message span').text(data.error)
             return

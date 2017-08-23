@@ -38,9 +38,23 @@ html
 						li
 							a(href="/login") Log in
 				ul.mobview.floating
-					li
+					li.cssextend
 						a#mobile(href="#")
 							i.fa.fa-fw.fa-bars
+						ul.flexview
+							li
+								a.scroll(href="/#home") Home
+							li
+								a.scroll(href="/#news") News
+							.division
+							if user
+								li#user
+									a(href="/user/manage") #{user.display_name}
+								li
+									a(href="/logout") Log out
+							else
+								li
+									a(href="/login") Log in
 		block body
 		block footer
 			footer

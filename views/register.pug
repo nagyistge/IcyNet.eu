@@ -6,8 +6,8 @@ block body
 	.wrapper
 		.boxcont
 			.box#login
+				h1 Create a new account
 				.left
-					h1 Create a new account
 					if message
 						if message.error
 							.message.error
@@ -30,5 +30,4 @@ block body
 						input(type="submit", value="Register")
 					a#create(href="/login") Log in with an existing account
 				.right
-					h3 More options
 					include includes/external.pug
