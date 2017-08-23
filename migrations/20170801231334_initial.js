@@ -50,7 +50,7 @@ exports.up = function(knex, Promise) {
       table.text('redirect_url')
       table.text('icon')
       table.text('secret')
-      table.text('scopes')
+      table.text('scope')
       table.text('grants')
 
       table.integer('user_id').unsigned().notNullable()
@@ -66,6 +66,7 @@ exports.up = function(knex, Promise) {
 
       table.integer('user_id').unsigned().notNullable()
       table.integer('client_id').unsigned().notNullable()
+      table.text('scope')
       table.dateTime('expires_at')
 
       table.foreign('user_id').references('users.id').onDelete('CASCADE').onUpdate('CASCADE')
@@ -77,7 +78,7 @@ exports.up = function(knex, Promise) {
       table.integer('user_id').unsigned().notNullable()
       table.integer('client_id').unsigned().notNullable()
       table.text('code')
-      table.text('scopes')
+      table.text('scope')
 
       table.foreign('user_id').references('users.id').onDelete('CASCADE').onUpdate('CASCADE')
 
@@ -90,7 +91,7 @@ exports.up = function(knex, Promise) {
       table.integer('user_id').unsigned().notNullable()
       table.integer('client_id').unsigned().notNullable()
       table.text('token')
-      table.text('scopes')
+      table.text('scope')
 
       table.foreign('user_id').references('users.id').onDelete('CASCADE').onUpdate('CASCADE')
 
@@ -103,7 +104,7 @@ exports.up = function(knex, Promise) {
       table.integer('user_id').unsigned().notNullable()
       table.integer('client_id').unsigned().notNullable()
       table.text('token')
-      table.text('scopes')
+      table.text('scope')
 
       table.foreign('user_id').references('users.id').onDelete('CASCADE').onUpdate('CASCADE')
 

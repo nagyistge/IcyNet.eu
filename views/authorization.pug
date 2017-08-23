@@ -1,0 +1,61 @@
+extends layout
+block title
+	|Icy Network - Authorize Client
+
+block body
+	.wrapper
+		.boxcont
+			.box#login
+				h1 Authorize OAuth2 Application
+				.left
+					.application
+						.picture
+							if client.icon
+								img(src=client.icon)
+							else
+								.noicon
+									i.fa.fa-fw.fa-gears
+						.info
+							.name= client.title
+							.description= client.description
+							a.url(href=client.url)= client.url
+					form#loginForm(method="POST", action="")
+						input(type="hidden", name="csrf", value=csrf)
+						input(type="hidden", name="decision", value='1')
+						input.authorize(type="submit", value="Authorize")
+					form#loginForm(method="POST", action="")
+						input(type="hidden", name="csrf", value=csrf)
+						input(type="hidden", name="decision", value='0')
+						input(type="submit", value="Deny")
+				.right
+					.haveaccess 
+						span This application can
+						ul.nobulletin
+							if scope.indexOf('email') !== -1
+								li 
+									i.fa.fa-fw.fa-envelope
+									|See your Email address
+							li 
+								i.fa.fa-fw.fa-user
+								|See your Display Name
+					.noaccess 
+						span This application cannot
+						ul.nobulletin
+							if scope.indexOf('email') === -1
+								li 
+									i.fa.fa-fw.fa-envelope
+									|See your Email address
+							li 
+								i.fa.fa-fw.fa-lock
+								|See your Password
+							li 
+								i.fa.fa-fw.fa-gears
+								|Change your Account Settings
+				if client.verified != 1
+					.unaffiliated
+						br
+						span
+							i.fa.fa-fw.fa-warning
+							|This application is not affiliated with Icy Network
+							i.fa.fa-fw.fa-warning
+

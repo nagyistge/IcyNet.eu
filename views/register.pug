@@ -17,11 +17,11 @@ block body
 					form#loginForm(method="POST", action="")
 						input(type="hidden", name="csrf", value=csrf)
 						label(for="username") Username
-						input(type="text", name="username", id="username")
+						input(type="text", name="username", id="username", value=formkeep.username)
 						label(for="display_name") Display Name
-						input(type="text", name="display_name", id="display_name")
+						input(type="text", name="display_name", id="display_name", value=formkeep.display_name)
 						label(for="email") Email Address
-						input(type="email", name="email", id="email")
+						input(type="email", name="email", id="email", value=formkeep.email)
 						label(for="password") Password
 						input(type="password", name="password", id="password")
 						label(for="password_repeat") Repeat Password

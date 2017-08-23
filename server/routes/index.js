@@ -7,6 +7,7 @@ import wrap from '../../scripts/asyncRoute'
 import API from '../api'
 
 import apiRouter from './api'
+import oauthRouter from './oauth2'
 
 let router = express.Router()
 
@@ -21,6 +22,8 @@ router.use(wrap(async (req, res, next) => {
   res.locals.message = messages
   next()
 }))
+
+router.use('/oauth2', oauthRouter)
 
 /*
   ================
@@ -114,6 +117,14 @@ router.get('/login/verify', wrap(async (req, res) => {
 */
 
 function formError (req, res, error, redirect) {
+  // Security measures
+  if (req.body.password) {
+    delete req.body.password
+    if (req.body.password_repeat) {
+      delete req.body.password_repeat
+    }
+  }
+  
   req.flash('formkeep', req.body || {})
   req.flash('message', {error: true, text: error})
   res.redirect(redirect || parseurl(req).path)

@@ -32,7 +32,7 @@ class OAuth2AuthorizedClient extends Model {
 
 class OAuth2Code extends Model {
   static get tableName () {
-    return 'oauth2_client_authorization'
+    return 'oauth2_code'
   }
 }
 

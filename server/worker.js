@@ -22,6 +22,11 @@ process.once('message', (args) => {
     process.send(util.format.apply(this, arguments))
   }
 
+  console.debug = function () {
+    if (!args.dev) return
+    process.send('[DEBUG] ' + util.format.apply(this, arguments))
+  }
+
   console.warn = function () {
     process.send('warn ' + util.format.apply(this, arguments))
   }

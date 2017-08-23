@@ -83,15 +83,49 @@ a
 section
     font-family: "Open Sans"
     position: relative
-    height: 100vh
+    min-height: 100vh
     .content
         position: absolute
         left: 0
         right: 0
         top: 0
         bottom: 40%
+        overflow: auto
         background-color: #ffffff
-        padding: 40px
+        padding: 20px
+    &#home
+        h1
+            font-size: 300%
+            text-align: center
+            color: green
+            margin-bottom: 0
+        p
+            text-align: center;
+            font-size: 200%
+            color: #0074d0;
+            font-weight: bold;
+
+.divboxes
+    text-align: center
+.divbox
+    width: 300px
+    display: inline-block
+    margin: 20px
+    vertical-align: text-top
+    .head
+        display: block
+        font-size: 30px
+        .fa
+            color: white
+            height: 32px
+            width: 32px
+            padding: 10px
+            border-radius: 100px
+            margin-right: 15px
+        .fa-lock
+            background-color: orange
+        .fa-github
+            background-color: green
 
 footer
     padding: 20px
@@ -157,6 +191,8 @@ input[type="submit"]
         .left, .right
             display: inline-block
             width: 50%
+        .left
+            border-right: 1px solid #ddd
         .right
             float: right
             width: 46%
@@ -224,6 +260,63 @@ span.divider
     margin: 0 5px
     cursor: default
 
+.nobulletin
+    list-style-type: none
+    padding-left: 2em
+    i.fa
+        margin-right: 10px
+
+.haveaccess
+    color: #0c9a0c
+    span
+        font-weight: bold
+.noaccess
+    color: red
+    span
+        font-weight: bold
+
+.unaffiliated
+    font-size: 120%
+    text-align: center
+    color: #FF5722
+    font-weight: bold
+
+.application
+    height: 140px
+    .picture
+        width: 120px
+        height: 120px
+        position: relative
+        display: inline-block
+        float: left
+        .noicon
+            width: 100%
+            height: 100%
+            text-align: center
+            background-color: #40aaff
+            color: #fff
+            i
+                font-size: 500%
+                margin-top: 20px
+    .info
+        margin-left: 130px
+        .name
+            font-size: 150%
+            font-weight: bold
+        .description
+            font-size: 80%
+            font-style: italic
+        .url
+            display: block
+            text-overflow: ellipsis
+            overflow: hidden
+
+input.authorize
+    background-color: #00b0ff
+    font-size: 200%
+    color: #fff
+    border: 1px solid #2196F3
+
 @media all and (max-width: 800px)
     .navigator
         padding: 0 10px
@@ -245,7 +338,29 @@ span.divider
             display: block
         .copyright
             margin-left: 0
+    .document
+        padding: 5px
+    .tos
+        width: auto
+        font-size: 4vw
+    .divbox
+        font-size: 80%
+        .head
+            font-size: 120%
+            .fa
+                width: 15px
+                height: 15px
+    section#home
+        h1
+            font-size: 150%
+            margin-top: 0
+        p
+            font-size: 100%
 
 @media all and (max-width: 500px)
+    section
+        padding: 10px
     .logo.small
         font-size: 5vw
+    .divbox
+        margin: 10px 0px
