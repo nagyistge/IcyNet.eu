@@ -5,6 +5,7 @@ import config from '../../scripts/load-config'
 import wrap from '../../scripts/asyncRoute'
 import API from '../api'
 import APIExtern from '../api/external'
+import News from '../api/news'
 
 let router = express.Router()
 
@@ -204,6 +205,48 @@ router.get('/external/discord/callback', wrap(async (req, res) => {
   }
 
   res.redirect(uri)
+}))
+
+/* ========
+ *   NEWS
+ * ========
+ */
+
+// Get page of articles
+router.get('/news/all/:page', wrap(async (req, res) => {
+  if (!req.params.page || isNaN(parseInt(req.params.page))) {
+    return res.status(400).jsonp({error: 'Invalid page number.'})
+  }
+
+  let page = parseInt(req.params.page)
+
+  let articles = await News.listNews(page)
+
+  res.jsonp(articles)
+}))
+
+// Redirect to page one
+router.get('/news/all/', (req, res) => {
+  res.redirect('/api/news/all/1')
+})
+
+// Fetch article
+router.get('/news/:id', wrap(async (req, res) => {
+  if (!req.params.id || isNaN(parseInt(req.params.id))) {
+    return res.status(400).jsonp({error: 'Invalid ID number.'})
+  }
+
+  let id = parseInt(req.params.id)
+
+  let article = await News.article(id)
+  res.jsonp(article)
+}))
+
+// Preview endpoint
+router.get('/news', wrap(async (req, res) => {
+  let articles = await News.preview()
+
+  res.jsonp(articles)
 }))
 
 module.exports = router

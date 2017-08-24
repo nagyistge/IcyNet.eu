@@ -1,0 +1,24 @@
+extends layout.pug
+
+block title
+	if article
+		|Icy Network - News - #{article.title}
+	else
+		|Icy Network - News - 404
+
+block body
+	.document
+		.content
+			if !article
+				span.error No such article
+			else
+				.article
+					.title= article.title
+					.author Published by 
+						span #{article.author.display_name} 
+						|at 
+						.timestamp #{new Date(article.created_at)}
+					.content!= article.content
+			.return
+				a(href="/news") Back to news directory
+

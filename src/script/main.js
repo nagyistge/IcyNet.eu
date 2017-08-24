@@ -2,9 +2,9 @@ window.$ = require('jquery')
 
 $(document).ready(function () {
   if (window.location.hash) {
-    let hash = window.location.hash 
-    if ($(hash).length) {
-      $(window).scrollTop($(hash).offset().top - $('.navigator').innerHeight() * 2)
+    var locha = window.location.hash 
+    if ($(locha).length) {
+      $(window).scrollTop($(locha).offset().top - $('.navigator').innerHeight() * 2)
     }
   }
 
@@ -30,7 +30,7 @@ $(document).ready(function () {
     if (!$(this.hash).length) return
     e.preventDefault()
 
-    let dest = 0
+    var dest = 0
     if ($(this.hash).offset().top > $(document).height() - $(window).height()) {
         dest = $(document).height() - $(window).height()
     } else {
@@ -55,8 +55,8 @@ $(document).ready(function () {
 
   if ($('#repeatcheck').length) {
     function pwcheck (e) {
-      let pw = $('#password').val()
-      let pwa = $('#password_repeat').val()
+      var pw = $('#password').val()
+      var pwa = $('#password_repeat').val()
       if (pwa !== pw) {
         $('#password_repeat').addClass('invalid')
         $('#repeatcheck').show()
@@ -76,6 +76,30 @@ $(document).ready(function () {
     })
   }
 
+  if ($('.newsfeed').length) {
+    $.ajax({
+      type: 'get',
+      url: '/api/news',
+      dataType: 'json',
+      success: function (data) {
+        if (!data.length) {
+          return $('.newsfeed').html('There is nothing to show at this moment.')
+        }
+        var html = ''
+        for (var i in data) {
+          var article = data[i]
+          html += '<div class="prvarticle">'
+          html += '<a class="title" href="/news/' + article.id + '-' + article.slug + '">' + article.title + '</a>'
+          html += '<span class="timestamp">Published at ' + new Date(article.created_at) + '</span>'
+          html += '<div class="prvcontent">' + article.content + '</div>'
+          html += '<a href="/news/' + article.id + '-' + article.slug + '">Read More</a>'
+          html += '</div>'
+        }
+        $('.newsfeed').html(html)
+      }
+    })
+  }
+
   window.checkLoginState = function () {
     FB.getLoginStatus(function(response) {
       $.ajax({
@@ -83,7 +107,7 @@ $(document).ready(function () {
         url: '/api/external/facebook/callback',
         dataType: 'json',
         data: response,
-        success: (data) => {
+        success: function (data) {
           if (data.error) {
             $('.message').addClass('error')
             $('.message span').text(data.error)

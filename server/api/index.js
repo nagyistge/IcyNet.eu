@@ -221,11 +221,6 @@ const API = {
         return {error: null, user: user}
       }
     }
-  },
-  External: {
-    serviceCallback: async function () {
-      
-    }
   }
 }
 

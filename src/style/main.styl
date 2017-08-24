@@ -216,7 +216,7 @@ input:not([type="submit"])
     box-shadow: inset 2px 2px 5px #ddd
     transition: border 0.1s linear
 
-input[type="submit"]
+.button, input[type="submit"]
     display: block
     padding: 5px 10px
     background-color: #fbfbfb
@@ -225,6 +225,9 @@ input[type="submit"]
     font-size: 120%
     margin: 10px 0
     cursor: pointer
+
+.button
+    display: inline-block
 
 .boxcont
     .box
@@ -248,6 +251,14 @@ input[type="submit"]
         border: 1px solid #ddd
         h1, h2, h3
             margin-top: 0
+
+.pgn
+    display: inline-block
+    margin-left: 10px
+
+.pagenum
+    display: inline-block
+    padding: 10px
 
 .dlbtn 
     display: block
@@ -370,6 +381,45 @@ input.invalid
 #repeatcheck
     color: red
     padding: 10px
+
+.article
+    .title
+        font-size: 200%
+        font-weight: bold
+    .author
+        font-size: 80%
+        color: #565656
+    .timestamp
+        display: inline-block
+    .content
+        margin-top: 20px
+        margin-bottom: 20px
+
+.newsfeed
+    .load
+        font-size: 120%
+        span
+            vertical-align: super
+            margin-left: 10px
+    .prvarticle
+        margin-bottom: 10px
+        .title
+            font-size: 200%
+            display: block
+            font-weight: bold
+        .timestamp
+            font-size: 80%
+            color: #565656
+        .prvcontent
+            margin: 10px 0
+
+.return
+    margin-top: 40px
+
+.content
+    hr
+        border-color: #ffffff
+        margin: 20px 0
 
 @media all and (max-width: 800px)
     .navigator

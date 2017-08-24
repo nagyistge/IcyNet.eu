@@ -34,6 +34,7 @@ router.post('/introspect', oauth.controller.introspection)
 router.get('/user', oauth.bearer, wrap(async (req, res) => {
   let accessToken = req.oauth2.accessToken
   let user = await uapi.User.get(accessToken.user_id)
+
   if (!user) {
     return res.status(404).jsonp({
       error: 'No such user'
@@ -42,14 +43,17 @@ router.get('/user', oauth.bearer, wrap(async (req, res) => {
 
   let udata = {
     id: user.id,
-    name: user.display_name,
+    username: user.username,
+    display_name: user.display_name,
     avatar_file: user.avatar_file
   }
 
+  // Include Email
   if (accessToken.scope.indexOf('email') != -1) {
     udata.email = user.email
   }
 
+  // Include privilege number
   if (accessToken.scope.indexOf('privilege') != -1) {
     udata.privilege = user.nw_privilege
   }

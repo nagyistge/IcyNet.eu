@@ -7,6 +7,7 @@ import config from '../../scripts/load-config'
 import wrap from '../../scripts/asyncRoute'
 import http from '../../scripts/http'
 import API from '../api'
+import News from '../api/news'
 
 import apiRouter from './api'
 import oauthRouter from './oauth2'
@@ -357,6 +358,31 @@ router.get('/docs/:name', (req, res) => {
 
   res.render('document', {doc: doc})
 })
+
+router.get('/news/:id?-*', wrap(async (req, res) => {
+  let id = parseInt(req.params.id)
+  if (isNaN(id)) {
+    return res.status(404).render('article', {article: null})
+  }
+
+  let article = await News.article(id)
+  if (!article.id) {
+    return res.status(404).render('article', {article: null})
+  }
+
+  res.render('article', {article: article})
+}))
+
+router.get('/news/', wrap(async (req, res) => {
+  let page = parseInt(req.query.page)
+  if (isNaN(page)) {
+    page = 1
+  }
+
+  let news = await News.listNews(page)
+  
+  res.render('news', {news: news})
+}))
 
 /*
   =========
