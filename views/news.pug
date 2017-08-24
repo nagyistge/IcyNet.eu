@@ -15,13 +15,13 @@ block body
 						|Page #{news.page.page} of #{news.page.pages}
 					.pgn
 						if news.page.page > 1
-							a.button(href="/news/?page=" + news.page.page - 1) Previous
+							a.button(href="/news/?page=" + (news.page.page - 1)) Previous
 						- var n = 0
 						while n < news.page.pages
 							a.button(href="/news/?page=" + (n + 1))= n + 1
 							- n++
 						if news.page.pages > news.page.page
-							a.button(href="/news/?page=" + news.page.page + 1) Next
+							a.button(href="/news/?page=" + (news.page.page + 1)) Next
 				each val in news.articles
 					.article
 						a.title(href="/news/" + val.id + "-" + val.slug)= val.title
