@@ -5,9 +5,7 @@ const util = require('util')
 
 require('babel-core/register')({
   plugins: [
-    'transform-es2015-modules-commonjs',
-    'syntax-async-functions',
-    'transform-async-to-generator'
+    'transform-es2015-modules-commonjs'
   ]
 })
 
