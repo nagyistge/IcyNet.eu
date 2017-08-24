@@ -11,6 +11,7 @@ import routes from './routes'
 import flash from '../scripts/flash'
 import config from '../scripts/load-config'
 import database from '../scripts/load-database'
+import email from './api/emailer'
 
 let app = express()
 let SessionStore = connectSession(session)
@@ -68,5 +69,6 @@ module.exports = (args) => {
 
   app.listen(args.port, () => {
     console.log('Listening on 0.0.0.0:' + args.port)
+    email.init()
   })
 }

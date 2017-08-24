@@ -8,6 +8,7 @@ import wrap from '../../scripts/asyncRoute'
 import http from '../../scripts/http'
 import API from '../api'
 import News from '../api/news'
+import email from '../api/emailer'
 
 import apiRouter from './api'
 import oauthRouter from './oauth2'
@@ -410,6 +411,11 @@ router.get('/activate/:token', wrap(async (req, res) => {
 }))
 
 router.use('/api', apiRouter)
+
+/*router.get('/test', (req, res, next) => {
+  email.pushMail('test', req.session.user.email, req.session.user).catch((e) => {next(e)})
+  res.jsonp({})
+})*/
 
 router.use((err, req, res, next) => {
   console.error(err)

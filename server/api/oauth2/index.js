@@ -13,7 +13,7 @@ class OAuth2Provider {
 
   express () {
     return (req, res, next) => {
-      console.debug('attached')
+      console.debug('OAuth2 Injected into request')
       req.oauth2 = this
       next()
     }

@@ -6,6 +6,7 @@ import models from './models'
 import crypto from 'crypto'
 import notp from 'notp'
 import base32 from 'thirty-two'
+import emailer from './emailer'
 
 const emailRe = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 
@@ -190,8 +191,10 @@ const API = {
         return emailRe.test(email)
       },
       newAccount: async function (regdata) {
+        let email = config.email && config.email.enabled
         let data = Object.assign(regdata, {
-          created_at: new Date()
+          created_at: new Date(),
+          activated: email ? 0 : 1
         })
 
         let userTest = await API.User.get(regdata.username)
@@ -216,8 +219,16 @@ const API = {
           type: 1
         })
 
-        // TODO: Send email
-        console.log(activationToken)
+        // Send Activation Email
+        console.debug('Activation token:', activationToken)
+        if (email) {
+          await emailer.pushMail('activate', user.email, {
+            domain: config.server.domain,
+            display_name: user.display_name,
+            activation_token: activationToken
+          })
+        }
+
         return {error: null, user: user}
       }
     }
