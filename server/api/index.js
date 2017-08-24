@@ -1,7 +1,6 @@
 import path from 'path'
 import cprog from 'child_process'
 import config from '../../scripts/load-config'
-import database from '../../scripts/load-database'
 import models from './models'
 import crypto from 'crypto'
 import notp from 'notp'
@@ -78,7 +77,7 @@ const API = {
     },
     ensureObject: async function (user, fieldsPresent = ['id']) {
       if (typeof user !== 'object' || !keysAvailable(user, fieldsPresent)) {
-        return await API.User.get(user)
+        return API.User.get(user)
       }
 
       if (user.id) {

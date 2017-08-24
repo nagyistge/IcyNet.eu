@@ -1,9 +1,7 @@
 import express from 'express'
-import parseurl from 'parseurl'
 import RateLimit from 'express-rate-limit'
 import config from '../../scripts/load-config'
 import wrap from '../../scripts/asyncRoute'
-import API from '../api'
 import APIExtern from '../api/external'
 import News from '../api/news'
 
@@ -63,8 +61,8 @@ function createSession (req, user) {
 }
 
 // Either give JSON or make a redirect
-function JsonData (req, res, error, redirect='/') {
-  if (req.headers['content-type'] == 'application/json') {
+function JsonData (req, res, error, redirect = '/') {
+  if (req.headers['content-type'] === 'application/json') {
     return res.jsonp({error: error, redirect: redirect})
   }
 
@@ -155,7 +153,7 @@ router.get('/external/twitter/callback', wrap(async (req, res) => {
  */
 router.get('/external/discord/login', wrap(async (req, res) => {
   if (!config.discord || !config.discord.api) return res.redirect('/')
-  
+
   let infos = APIExtern.Discord.getAuthorizeURL()
 
   req.session.discord_auth = {

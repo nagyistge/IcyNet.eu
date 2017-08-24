@@ -8,7 +8,6 @@ import wrap from '../../scripts/asyncRoute'
 import http from '../../scripts/http'
 import API from '../api'
 import News from '../api/news'
-import email from '../api/emailer'
 
 import apiRouter from './api'
 import oauthRouter from './oauth2'
@@ -102,9 +101,8 @@ router.get('/user/two-factor', wrap(async (req, res) => {
 
   let newToken = await API.User.Login.totpAquire(req.session.user)
   if (!newToken) return res.redirect('/')
-  
-  res.locals.uri = newToken
-  res.render('totp')
+
+  res.render('totp', { uri: newToken })
 }))
 
 router.get('/user/two-factor/disable', wrap(async (req, res) => {
@@ -133,7 +131,7 @@ function formError (req, res, error, redirect) {
       delete req.body.password_repeat
     }
   }
-  
+
   req.flash('formkeep', req.body || {})
   req.flash('message', {error: true, text: error})
   res.redirect(redirect || parseurl(req).path)
@@ -279,8 +277,8 @@ router.post('/register', accountLimiter, wrap(async (req, res) => {
   }
 
   // 2nd Check: Display Name
-  let display_name = req.body.display_name
-  if (!display_name || !display_name.match(/^([^\\`]{3,32})$/i)) {
+  let displayName = req.body.display_name
+  if (!displayName || !displayName.match(/^([^\\`]{3,32})$/i)) {
     return formError(req, res, 'Invalid display name!')
   }
 
@@ -305,7 +303,7 @@ router.post('/register', accountLimiter, wrap(async (req, res) => {
   // 6th Check: reCAPTCHA (if configuration contains key)
   if (config.security.recaptcha && config.security.recaptcha.site_key) {
     if (!req.body['g-recaptcha-response']) return formError(req, res, 'Please complete the reCAPTCHA!')
-    
+
     try {
       let data = await http.POST('https://www.google.com/recaptcha/api/siteverify', {}, {
         secret: config.security.recaptcha.secret_key,
@@ -328,7 +326,7 @@ router.post('/register', accountLimiter, wrap(async (req, res) => {
   // Attempt to create the user
   let newUser = await API.User.Register.newAccount({
     username: username,
-    display_name: display_name,
+    display_name: displayName,
     password: hash,
     email: email,
     ip_address: req.realIP
@@ -381,7 +379,7 @@ router.get('/news/', wrap(async (req, res) => {
   }
 
   let news = await News.listNews(page)
-  
+
   res.render('news', {news: news})
 }))
 
@@ -411,11 +409,6 @@ router.get('/activate/:token', wrap(async (req, res) => {
 }))
 
 router.use('/api', apiRouter)
-
-/*router.get('/test', (req, res, next) => {
-  email.pushMail('test', req.session.user.email, req.session.user).catch((e) => {next(e)})
-  res.jsonp({})
-})*/
 
 router.use((err, req, res, next) => {
   console.error(err)

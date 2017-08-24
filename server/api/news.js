@@ -1,7 +1,5 @@
 import API from './index'
 import Models from './models'
-import config from '../../scripts/load-config'
-import database from '../../scripts/load-database'
 
 const perPage = 8
 
@@ -9,7 +7,7 @@ function slugify (title) {
   return title.toLowerCase().replace(/\W/g, '-').substring(0, 16)
 }
 
-//** ppp - Posts Per Page; dcount - Post Count; page - number of current page
+/* ppp - Posts Per Page; dcount - Post Count; page - number of current page */
 function Pagination (ppp, dcount, page) {
   if (!ppp) ppp = 5
   if (!dcount) return null
@@ -18,7 +16,7 @@ function Pagination (ppp, dcount, page) {
   if (page > pageCount) page = pageCount
 
   let offset = (page - 1) * ppp
-  
+
   return {
     page: page,
     perPage: ppp,
@@ -98,9 +96,7 @@ const News = {
     if (!article.length) return {}
     article = article[0]
 
-    let poster = await API.User.get(article.user_id)
-
-    return await cleanArticle(article)
+    return cleanArticle(article)
   }
 }
 

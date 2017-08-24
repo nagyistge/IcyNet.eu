@@ -5,12 +5,9 @@ import connectSession from 'connect-redis'
 import path from 'path'
 import crypto from 'crypto'
 
-import fs from 'fs'
-
 import routes from './routes'
 import flash from '../scripts/flash'
 import config from '../scripts/load-config'
-import database from '../scripts/load-database'
 import email from './api/emailer'
 
 let app = express()

@@ -9,7 +9,7 @@ module.exports = async (req, res, client, scope, user, redirectUri, createAllowF
   }
 
   if (createAllowFuture) {
-    if (!req.body || (typeof req.body['decision']) === undefined) {
+    if (!req.body || (typeof req.body['decision']) === 'undefined') {
       throw new error.InvalidRequest('No decision parameter passed')
     } else if (req.body['decision'] === '0') {
       throw new error.AccessDenied('User denied access to the resource')

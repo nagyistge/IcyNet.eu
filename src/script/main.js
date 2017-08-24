@@ -1,15 +1,29 @@
 window.$ = require('jquery')
 
 $(document).ready(function () {
+  function pwcheck (e) {
+    var pw = $('#password').val()
+    var pwa = $('#password_repeat').val()
+    if (pwa !== pw) {
+      $('#password_repeat').addClass('invalid')
+      $('#repeatcheck').show()
+      $('#repeatcheck').html('<span class="error">The passwords do not match.</span>')
+    } else {
+      $('#password_repeat').removeClass('invalid')
+      $('#repeatcheck').hide()
+      $('#repeatcheck').html('')
+    }
+  }
+
   if (window.location.hash) {
-    var locha = window.location.hash 
+    var locha = window.location.hash
     if ($(locha).length) {
       $(window).scrollTop($(locha).offset().top - $('.navigator').innerHeight() * 2)
     }
   }
 
-  $(window).on('scroll', function() {
-    if($(window).scrollTop() >= $('.banner').innerHeight()) {
+  $(window).on('scroll', function () {
+    if ($(window).scrollTop() >= $('.banner').innerHeight()) {
       $('.anchor').css('height', $('.navigator').innerHeight() + 'px')
       $('#navlogo').removeClass('hidden')
       $('.navigator').addClass('fix')
@@ -20,7 +34,7 @@ $(document).ready(function () {
     }
   })
 
-  if($(window).scrollTop() >= $('.banner').innerHeight()) {
+  if ($(window).scrollTop() >= $('.banner').innerHeight()) {
     $('#navlogo').removeClass('hidden')
     $('.navigator').addClass('fix')
     $('.anchor').css('height', $('.navigator').innerHeight() + 'px')
@@ -32,13 +46,13 @@ $(document).ready(function () {
 
     var dest = 0
     if ($(this.hash).offset().top > $(document).height() - $(window).height()) {
-        dest = $(document).height() - $(window).height()
+      dest = $(document).height() - $(window).height()
     } else {
-        dest = $(this.hash).offset().top
+      dest = $(this.hash).offset().top
     }
 
     $('html,body').animate({
-        scrollTop: dest - $('.navigator').innerHeight()
+      scrollTop: dest - $('.navigator').innerHeight()
     }, 1000, 'swing')
   })
 
@@ -47,27 +61,13 @@ $(document).ready(function () {
     $('.flexview').toggleClass('extended')
   })
 
-  $('body').click(function(e) {
+  $('body').click(function (e) {
     if (!$(e.target).is('#mobile') && !$(e.target).is('#mobile i') && $('.flexview').hasClass('extended')) {
       $('.flexview').removeClass('extended')
     }
   })
 
   if ($('#repeatcheck').length) {
-    function pwcheck (e) {
-      var pw = $('#password').val()
-      var pwa = $('#password_repeat').val()
-      if (pwa !== pw) {
-        $('#password_repeat').addClass('invalid')
-        $('#repeatcheck').show()
-        $('#repeatcheck').html('<span class="error">The passwords do not match.</span>')
-      } else {
-        $('#password_repeat').removeClass('invalid')
-        $('#repeatcheck').hide()
-        $('#repeatcheck').html('')
-      }
-    }
-
     $('#password_repeat').on('keyup', pwcheck)
     $('#password').on('keyup', function (e) {
       if ($('#password_repeat').val()) {
@@ -101,7 +101,8 @@ $(document).ready(function () {
   }
 
   window.checkLoginState = function () {
-    FB.getLoginStatus(function(response) {
+    var FB = window.FB
+    FB.getLoginStatus(function (response) {
       $.ajax({
         type: 'post',
         url: '/api/external/facebook/callback',
@@ -115,12 +116,13 @@ $(document).ready(function () {
           }
 
           if (data.redirect) {
-            return window.location.href = data.redirect
+            window.location.href = data.redirect
+            return
           }
 
           window.location.reload()
         }
-      }).fail(function() {
+      }).fail(function () {
         $('.message').addClass('error')
         $('.message span').text('An error occured.')
       })

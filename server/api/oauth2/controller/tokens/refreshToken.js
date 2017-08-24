@@ -25,7 +25,7 @@ module.exports = async (oauth2, client, pRefreshToken, scope) => {
   }
 
   if (oauth2.model.refreshToken.getClientId(refreshToken) !== oauth2.model.client.getId(client)) {
-    console.warn('Client "' + oauth2.model.client.getId(client) + '" tried to fetch a refresh token which belongs to client"' + 
+    console.warn('Client "' + oauth2.model.client.getId(client) + '" tried to fetch a refresh token which belongs to client"' +
       oauth2.model.refreshToken.getClientId(refreshToken) + '"')
     throw new error.InvalidGrant('Refresh token not found')
   }
@@ -59,7 +59,7 @@ module.exports = async (oauth2, client, pRefreshToken, scope) => {
 
   if (!accessToken) {
     try {
-      resObj.access_token = await oauth2.model.accessToken.create(oauth2.model.user.getId(user), 
+      resObj.access_token = await oauth2.model.accessToken.create(oauth2.model.user.getId(user),
         oauth2.model.client.getId(client), oauth2.model.refreshToken.getScope(refreshToken), oauth2.model.accessToken.ttl)
     } catch (err) {
       throw new error.ServerError('Failed to call accessToken.create function')

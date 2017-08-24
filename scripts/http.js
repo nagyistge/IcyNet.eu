@@ -2,7 +2,7 @@ import url from 'url'
 import qs from 'querystring'
 
 function HTTP_GET (link, headers = {}, lback) {
-  if(lback && lback >= 4) throw new Error('infinite loop!') // Prevent infinite loop requests
+  if (lback && lback >= 4) throw new Error('infinite loop!') // Prevent infinite loop requests
   let parsed = url.parse(link)
   let opts = {
     host: parsed.hostname,
@@ -15,7 +15,7 @@ function HTTP_GET (link, headers = {}, lback) {
     }
   }
 
-  if(headers) {
+  if (headers) {
     opts.headers = Object.assign(opts.headers, headers)
   }
 
@@ -25,7 +25,7 @@ function HTTP_GET (link, headers = {}, lback) {
   return new Promise((resolve, reject) => {
     let req = httpModule.get(opts, (res) => {
       if (res.statusCode === 302 || res.statusCode === 301) {
-        if(!lback) {
+        if (!lback) {
           lback = 1
         } else {
           lback += 1
@@ -61,7 +61,7 @@ function HTTP_GET (link, headers = {}, lback) {
 
 function HTTP_POST (link, headers = {}, data) {
   let parsed = url.parse(link)
-  let post_data = qs.stringify(data)
+  let postData = qs.stringify(data)
 
   let opts = {
     host: parsed.host,
@@ -70,7 +70,7 @@ function HTTP_POST (link, headers = {}, data) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
-      'Content-Length': Buffer.byteLength(post_data),
+      'Content-Length': Buffer.byteLength(postData),
       'User-Agent': 'Squeebot/Commons-2.0.0'
     }
   }
@@ -80,7 +80,7 @@ function HTTP_POST (link, headers = {}, data) {
   }
 
   if (opts.headers['Content-Type'] === 'application/json') {
-    post_data = JSON.stringify(data)
+    postData = JSON.stringify(data)
   }
 
   return new Promise((resolve, reject) => {
@@ -100,7 +100,7 @@ function HTTP_POST (link, headers = {}, data) {
       reject(new Error(e))
     })
 
-    req.write(post_data)
+    req.write(postData)
     req.end()
   })
 }

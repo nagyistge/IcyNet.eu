@@ -1,6 +1,5 @@
 import {EmailTemplate} from 'email-templates'
 import path from 'path'
-import bluebird from 'bluebird'
 import nodemailer from 'nodemailer'
 import config from '../../scripts/load-config'
 

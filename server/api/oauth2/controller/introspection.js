@@ -24,7 +24,7 @@ module.exports = wrap(async function (req, res) {
       return response.error(req, res, new error.InvalidRequest('Unsupported authorization method:', pieces[0]))
     }
 
-    pieces = new Buffer(pieces[1], 'base64').toString('ascii').split(':', 2)
+    pieces = Buffer.from(pieces[1], 'base64').toString('ascii').split(':', 2)
     if (!pieces || pieces.length !== 2) {
       return response.error(req, res, new error.InvalidRequest('Authorization header has corrupted data'))
     }

@@ -1,5 +1,4 @@
 import config from '../../scripts/load-config'
-import database from '../../scripts/load-database'
 import http from '../../scripts/http'
 import models from './models'
 import UAPI from './index'
@@ -84,7 +83,7 @@ const API = {
       // Determine profile picture
       let profilepic = ''
       if (fbdata.picture) {
-        if (fbdata.picture.is_silhouette == false && fbdata.picture.url) {
+        if (fbdata.picture.is_silhouette === false && fbdata.picture.url) {
           // TODO: Download the profile image and save it locally
           profilepic = fbdata.picture.url
         }
@@ -141,7 +140,7 @@ const API = {
     getRequestToken: async function () {
       if (!twitterApp) API.Twitter.oauthApp()
       let tokens
-      
+
       try {
         tokens = await twitterApp.getOAuthRequestToken()
       } catch (e) {
@@ -149,7 +148,7 @@ const API = {
         return {error: 'No tokens returned'}
       }
 
-      if (tokens[2].oauth_callback_confirmed !== "true") return {error: 'No tokens returned.'}
+      if (tokens[2].oauth_callback_confirmed !== 'true') return {error: 'No tokens returned.'}
 
       return {error: null, token: tokens[0], token_secret: tokens[1]}
     },
@@ -172,8 +171,8 @@ const API = {
       if (!twitterApp) API.Twitter.oauthApp()
       let twdata
       try {
-        let resp = await twitterApp.get('https://api.twitter.com/1.1/account/verify_credentials.json?include_email=true', accessTokens.access_token, 
-          accessTokens.access_token_secret)
+        let resp = await twitterApp.get('https://api.twitter.com/1.1/account/verify_credentials.json?include_email=true',
+          accessTokens.access_token, accessTokens.access_token_secret)
         twdata = JSON.parse(resp[0])
       } catch (e) {
         console.error(e)
@@ -236,7 +235,7 @@ const API = {
     }
   },
   Discord: {
-    oauth2App: function() {
+    oauth2App: function () {
       if (discordApp) return
       discordApp = new oauth.PromiseOAuth2(
         config.discord.api,

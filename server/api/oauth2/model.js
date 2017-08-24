@@ -1,8 +1,6 @@
 import config from '../../../scripts/load-config'
-import database from '../../../scripts/load-database'
 import Models from '../models'
 import Users from '../index'
-
 import crypto from 'crypto'
 
 const OAuthDB = {
@@ -62,7 +60,7 @@ const OAuthDB = {
     },
     fetchById: async (id) => {
       let client = await Models.OAuth2Client.query().where('id', id)
-      
+
       if (!client.length) return null
 
       return client[0]
@@ -91,7 +89,7 @@ const OAuthDB = {
       }
 
       scope = scope.trim()
-      if (scope.indexOf(',') != -1) {
+      if (scope.indexOf(',') !== -1) {
         scope = scope.split(',')
       } else {
         scope = scope.split(' ')
@@ -141,7 +139,7 @@ const OAuthDB = {
       code = await Models.OAuth2Code.query().where('code', code)
 
       if (!code.length) return null
-      
+
       return code[0]
     },
     removeByCode: async (code) => {
@@ -149,7 +147,7 @@ const OAuthDB = {
         code = code.code
       }
 
-      return await Models.OAuth2Code.query().delete().where('code', code)
+      return Models.OAuth2Code.query().delete().where('code', code)
     },
     getUserId: (code) => {
       return code.user_id
@@ -182,15 +180,15 @@ const OAuthDB = {
       token = await Models.OAuth2RefreshToken.query().where('token', token)
 
       if (!token.length) return null
-      
+
       return token[0]
     },
     removeByUserIdClientId: async (userId, clientId) => {
-      return await Models.OAuth2RefreshToken.query().delete().where('user_id', userId)
+      return Models.OAuth2RefreshToken.query().delete().where('user_id', userId)
         .andWhere('client_id', clientId)
     },
     removeByRefreshToken: async (token) => {
-      return await Models.OAuth2RefreshToken.query().delete().where('token', token)
+      return Models.OAuth2RefreshToken.query().delete().where('token', token)
     },
     getUserId: (refreshToken) => {
       return refreshToken.user_id
