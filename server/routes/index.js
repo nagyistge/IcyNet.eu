@@ -8,6 +8,7 @@ import wrap from '../../scripts/asyncRoute'
 import http from '../../scripts/http'
 import API from '../api'
 import News from '../api/news'
+import emailer from '../api/emailer'
 
 import apiRouter from './api'
 import oauthRouter from './oauth2'
@@ -21,12 +22,35 @@ let accountLimiter = new RateLimit({
   message: 'Whoa, slow down there, buddy! You just hit our rate limits. Try again in 1 hour.'
 })
 
+function setSession (req, user) {
+  req.session.user = {
+    id: user.id,
+    username: user.username,
+    display_name: user.display_name,
+    email: user.email,
+    avatar_file: user.avatar_file,
+    session_refresh: Date.now() + 1800000 // 30 minutes
+  }
+}
+
 router.use(wrap(async (req, res, next) => {
   let messages = req.flash('message')
   if (!messages || !messages.length) {
     messages = {}
   } else {
     messages = messages[0]
+  }
+
+  // Update user session every 30 minutes
+  if (req.session.user) {
+    if (!req.session.user.session_refresh) {
+      req.session.user.session_refresh = Date.now() + 1800000
+    }
+
+    if (req.session.user.session_refresh < Date.now()) {
+      let udata = await API.User.get(req.session.user.id)
+      setSession(req, udata)
+    }
   }
 
   res.locals.message = messages
@@ -117,6 +141,49 @@ router.get('/login/verify', (req, res) => {
   res.render('totp-check')
 })
 
+router.get('/user/manage', wrap(async (req, res) => {
+  if (!req.session.user) return res.redirect('/login')
+
+  let totpEnabled = false
+  let socialStatus = await API.User.socialStatus(req.session.user)
+
+  if (socialStatus.password) {
+    totpEnabled = await API.User.Login.totpTokenRequired(req.session.user)
+  }
+
+  if (config.twitter && config.twitter.api) {
+    if (!socialStatus.enabled.twitter) {
+      res.locals.twitter_auth = true
+    } else if (!socialStatus.source && socialStatus.source !== 'twitter') {
+      res.locals.twitter_auth = false
+    }
+  }
+
+  if (config.discord && config.discord.api) {
+    if (!socialStatus.enabled.discord) {
+      res.locals.discord_auth = true
+    } else if (!socialStatus.source && socialStatus.source !== 'discord') {
+      res.locals.discord_auth = false
+    }
+  }
+
+  if (config.facebook && config.facebook.client) {
+    if (!socialStatus.enabled.fb) {
+      res.locals.facebook_auth = config.facebook.client
+    } else if (!socialStatus.source && socialStatus.source !== 'fb') {
+      res.locals.facebook_auth = false
+    }
+  }
+
+  res.render('settings', {totp: totpEnabled, password: socialStatus.password})
+}))
+
+router.get('/user/manage/password', wrap(async (req, res) => {
+  if (!req.session.user) return res.redirect('/login')
+
+  res.render('password_new')
+}))
+
 /*
   =================
     POST HANDLING
@@ -125,10 +192,9 @@ router.get('/login/verify', (req, res) => {
 
 function formError (req, res, error, redirect) {
   // Security measures: never store any passwords in any session
-  if (req.body.password) {
-    delete req.body.password
-    if (req.body.password_repeat) {
-      delete req.body.password_repeat
+  for (let key in req.body) {
+    if (key.indexOf('password') !== -1) {
+      delete req.body[key]
     }
   }
 
@@ -239,14 +305,7 @@ router.post('/login', wrap(async (req, res) => {
   // TODO: Ban checks
 
   // Set session
-  req.session.user = {
-    id: user.id,
-    username: user.username,
-    display_name: user.display_name,
-    email: user.email,
-    avatar_file: user.avatar_file,
-    session_refresh: Date.now() + 1800000 // 30 minutes
-  }
+  setSession(req, user)
 
   let uri = '/'
   if (req.session.redirectUri) {
@@ -340,6 +399,91 @@ router.post('/register', accountLimiter, wrap(async (req, res) => {
   res.redirect('/login')
 }))
 
+router.post('/user/manage', wrap(async (req, res, next) => {
+  if (!req.session.user) return next()
+
+  if (req.body.csrf !== req.session.csrf) {
+    return formError(req, res, 'Invalid session! Try reloading the page.')
+  }
+
+  if (!req.body.display_name) {
+    return formError(req, res, 'Display Name cannot be blank.')
+  }
+
+  let displayName = req.body.display_name
+  if (!displayName || !displayName.match(/^([^\\`]{3,32})$/i)) {
+    return formError(req, res, 'Invalid display name!')
+  }
+
+  // No change
+  if (displayName === req.session.user.display_name) {
+    return res.redirect('/user/manage')
+  }
+
+  let success = await API.User.update(req.session.user, {
+    display_name: displayName
+  })
+
+  if (success.error) {
+    return formError(req, res, success.error)
+  }
+
+  req.session.user.display_name = displayName
+
+  req.flash('message', {error: false, text: 'Settings changed successfully. Please note that it may take time to update on other websites and devices.'})
+  res.redirect('/user/manage')
+}))
+
+router.post('/user/manage/password', wrap(async (req, res, next) => {
+  if (!req.session.user) return next()
+
+  if (req.body.csrf !== req.session.csrf) {
+    return formError(req, res, 'Invalid session! Try reloading the page.')
+  }
+
+  if (!req.body.password_old) {
+    return formError(req, res, 'Please enter your current password.')
+  }
+
+  let passwordMatch = await API.User.Login.password(req.session.user, req.body.password_old)
+  if (!passwordMatch) {
+    return formError(req, res, 'The password you provided is incorrect.')
+  }
+
+  let password = req.body.password
+  if (!password || password.length < 8 || password.length > 32) {
+    return formError(req, res, 'Invalid password! Keep it between 8 and 32 characters!')
+  }
+
+  let passwordAgain = req.body.password_repeat
+  if (!passwordAgain || password !== passwordAgain) {
+    return formError(req, res, 'The passwords do not match!')
+  }
+
+  password = await API.User.Register.hashPassword(password)
+
+  let success = await API.User.update(req.session.user, {
+    password: password
+  })
+
+  if (success.error) {
+    return formError(req, res, success.error)
+  }
+
+  let user = req.session.user
+  console.warn('[SECURITY AUDIT] User \'%s\' password has been changed from %s', user.username, req.realIP)
+
+  if (config.email && config.email.enabled) {
+    await emailer.pushMail('password_alert', user.email, {
+      display_name: user.display_name,
+      ip: req.realIP
+    })
+  }
+
+  req.flash('message', {error: false, text: 'Password changed successfully.'})
+  return res.redirect('/user/manage')
+}))
+
 /*
   =============
     DOCUMENTS
@@ -347,10 +491,10 @@ router.post('/register', accountLimiter, wrap(async (req, res) => {
 */
 
 const docsDir = path.join(__dirname, '../../documents')
-router.get('/docs/:name', (req, res) => {
+router.get('/docs/:name', (req, res, next) => {
   let doc = path.join(docsDir, req.params.name + '.html')
   if (!fs.existsSync(docsDir) || !fs.existsSync(doc)) {
-    return res.status(404).end()
+    return next()
   }
 
   doc = fs.readFileSync(doc, {encoding: 'utf8'})
@@ -409,6 +553,10 @@ router.get('/activate/:token', wrap(async (req, res) => {
 }))
 
 router.use('/api', apiRouter)
+
+router.use((req, res) => {
+  res.status(404).render('404')
+})
 
 router.use((err, req, res, next) => {
   console.error(err)

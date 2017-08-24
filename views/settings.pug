@@ -1,0 +1,48 @@
+extends layout.pug
+block title
+	|Icy Network - User Settings
+
+block body
+	.wrapper
+		.boxcont
+			.box#settings
+				h1 User Settings
+				.left
+					if message
+						if message.error
+							.message.error
+						else
+							.message
+						span #{message.text}
+					form#loginForm(method="POST", action="")
+						input(type="hidden", name="csrf", value=csrf)
+						label(for="username") Username
+						input(type="text", name="username", id="username", value=user.username, disabled)
+						label(for="display_name") Display Name
+						input(type="text", name="display_name", id="display_name", value=user.display_name)
+						input(type="submit", value="Save Settings")
+				.right
+					h3 Social Media Accounts
+					include includes/external.pug
+					if twitter_auth == false
+						a.option(href="/api/external/twitter/remove") Unlink Twitter
+					if facebook_auth == false
+						a.option(href="/api/external/facebook/remove") Unlink Facebook
+					if discord_auth == false
+						a.option(href="/api/external/discord/remove") Unlink Discord
+					h3 Other Options
+					if password
+						a.option(href="/user/manage/password")
+							i.fa.fa-fw.fa-lock
+							|Change Password
+						if totp
+							a.option(href="/user/two-factor/disable")
+								i.fa.fa-fw.fa-lock
+								|Disable Two-Factor Authentication
+						else
+							a.option(href="/user/two-factor")
+								i.fa.fa-fw.fa-lock
+								|Enable Two-Factor Authentication
+					a.option(href="/user/manage/email")
+						i.fa.fa-fw.fa-envelope
+						|Change Email Address

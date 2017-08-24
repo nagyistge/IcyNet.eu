@@ -49,12 +49,12 @@ router.get('/user', oauth.bearer, wrap(async (req, res) => {
   }
 
   // Include Email
-  if (accessToken.scope.indexOf('email') != -1) {
+  if (accessToken.scope.indexOf('email') !== -1) {
     udata.email = user.email
   }
 
   // Include privilege number
-  if (accessToken.scope.indexOf('privilege') != -1) {
+  if (accessToken.scope.indexOf('privilege') !== -1) {
     udata.privilege = user.nw_privilege
   }
 

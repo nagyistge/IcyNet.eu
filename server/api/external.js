@@ -35,6 +35,21 @@ const API = {
 
       await await models.External.query().insert(data)
       return true
+    },
+    remove: async (user, service) => {
+      user = await UAPI.User.ensureObject(user, ['password'])
+      let userExterns = await models.External.query().orderBy('created_at', 'asc').where('user_id', user.id)
+
+      if (!userExterns.length) {
+        return false
+      }
+
+      // Do not remove the service the user signed up with
+      if (userExterns[0] && (user.password === '' || user.password === null) && userExterns[0].service === service) {
+        return false
+      }
+
+      return models.External.query().delete().where('user_id', user.id).andWhere('service', service)
     }
   },
   Facebook: {
@@ -97,12 +112,13 @@ const API = {
         avatar_file: profilepic,
         activated: 1,
         ip_address: data.ip_address,
-        created_at: new Date()
+        created_at: new Date(),
+        updated_at: new Date()
       }
 
       // Check if the username is already taken
       if (await UAPI.User.get(udataLimited.username) != null) {
-        udataLimited.username = 'FB' + UAPI.Hash(4)
+        udataLimited.username = udataLimited.username + UAPI.Hash(4)
       }
 
       // Check if the email Facebook gave us is already registered, if so,
@@ -209,12 +225,13 @@ const API = {
         avatar_file: profilepic,
         activated: 1,
         ip_address: ipAddress,
+        updated_at: new Date(),
         created_at: new Date()
       }
 
       // Check if the username is already taken
       if (await UAPI.User.get(udataLimited.username) != null) {
-        udataLimited.username = 'Tw' + UAPI.Hash(4)
+        udataLimited.username = udataLimited.username + UAPI.Hash(4)
       }
 
       // Check if the email Twitter gave us is already registered, if so,
@@ -320,6 +337,7 @@ const API = {
         avatar_file: profilepic,
         activated: 1,
         ip_address: ipAddress,
+        updated_at: new Date(),
         created_at: new Date()
       }
 

@@ -62,12 +62,7 @@ function createSession (req, user) {
 
 // Either give JSON or make a redirect
 function JsonData (req, res, error, redirect = '/') {
-  if (req.headers['content-type'] === 'application/json') {
-    return res.jsonp({error: error, redirect: redirect})
-  }
-
-  req.flash('message', {error: true, text: error})
-  res.redirect(redirect)
+  res.jsonp({error: error, redirect: redirect})
 }
 
 /** FACEBOOK LOGIN
@@ -92,6 +87,17 @@ router.post('/external/facebook/callback', wrap(async (req, res) => {
   }
 
   JsonData(req, res, null, uri)
+}))
+
+router.get('/external/facebook/remove', wrap(async (req, res) => {
+  if (!req.session.user) return res.redirect('/login')
+  let done = await APIExtern.Common.remove(req.session.user, 'fb')
+
+  if (!done) {
+    req.flash('message', {error: true, text: 'Unable to unlink social media account'})
+  }
+
+  res.redirect('/user/manage')
 }))
 
 /** TWITTER LOGIN
@@ -145,6 +151,18 @@ router.get('/external/twitter/callback', wrap(async (req, res) => {
   }
 
   res.redirect(uri)
+}))
+
+router.get('/external/twitter/remove', wrap(async (req, res) => {
+  if (!req.session.user) return res.redirect('/login')
+
+  let done = await APIExtern.Common.remove(req.session.user, 'twitter')
+
+  if (!done) {
+    req.flash('message', {error: true, text: 'Unable to unlink social media account'})
+  }
+
+  res.redirect('/user/manage')
 }))
 
 /** DISCORD LOGIN
@@ -205,6 +223,18 @@ router.get('/external/discord/callback', wrap(async (req, res) => {
   res.redirect(uri)
 }))
 
+router.get('/external/discord/remove', wrap(async (req, res) => {
+  if (!req.session.user) return res.redirect('/login')
+
+  let done = await APIExtern.Common.remove(req.session.user, 'discord')
+
+  if (!done) {
+    req.flash('message', {error: true, text: 'Unable to unlink social media account'})
+  }
+
+  res.redirect('/user/manage')
+}))
+
 /* ========
  *   NEWS
  * ========
@@ -246,5 +276,10 @@ router.get('/news', wrap(async (req, res) => {
 
   res.jsonp(articles)
 }))
+
+// 404
+router.use((req, res) => {
+  res.status(404).jsonp({error: 'Not found'})
+})
 
 module.exports = router

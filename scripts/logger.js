@@ -35,9 +35,12 @@ module.exports = function () {
   this.logProcess = (pid, msg) => {
     if (msg.indexOf('warn') === 0) {
       msg = msg.substring(5)
+      console.warn('[%s] %s', pid, msg)
     } else if (msg.indexOf('error') === 0) {
       msg = msg.substring(6)
+      console.error('[%s] %s', pid, msg)
+    } else {
+      console.log('[%s] %s', pid, msg)
     }
-    console.log('[%s] %s', pid, msg)
   }
 }

@@ -109,6 +109,7 @@ $(document).ready(function () {
         dataType: 'json',
         data: response,
         success: function (data) {
+          console.log(data)
           if (data.error) {
             $('.message').addClass('error')
             $('.message span').text(data.error)

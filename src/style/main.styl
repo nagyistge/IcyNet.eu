@@ -231,6 +231,14 @@ input:not([type="submit"])
 
 .boxcont
     .box
+        padding: 20px
+        margin: auto
+        margin-top: 5%
+        background-color: #fff
+        box-shadow: 5px 5px 15px #868686
+        border: 1px solid #ddd
+        h1:first-child, h2:first-child, h3:first-child
+            margin-top: 0
         .left, .right
             display: inline-block
             width: 50%
@@ -241,16 +249,13 @@ input:not([type="submit"])
             width: 46%
         &#login
             max-width: 700px
+        &#settings
+            max-width: 700px
+            min-height: 380px
         &#totpcheck
             max-width: 400px
-        padding: 20px
-        margin: auto
-        margin-top: 5%
-        background-color: #fff
-        box-shadow: 5px 5px 15px #868686
-        border: 1px solid #ddd
-        h1, h2, h3
-            margin-top: 0
+        &#error
+            width: 200px
 
 .pgn
     display: inline-block
@@ -422,6 +427,9 @@ input.invalid
     hr
         border-color: #ffffff
         margin: 20px 0
+
+.option
+    display: block
 
 @media all and (max-width: 800px)
     .navigator

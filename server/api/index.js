@@ -86,9 +86,42 @@ const API = {
 
       return null
     },
+    socialStatus: async function (user) {
+      user = await API.User.ensureObject(user, ['password'])
+      if (!user) return null
+      let external = await models.External.query().orderBy('created_at', 'asc').where('user_id', user.id)
+      let enabled = {}
+
+      for (let i in external) {
+        let ext = external[i]
+        enabled[ext.service] = true
+      }
+
+      let accountSourceIsExternal = user.password === null || user.password === ''
+      let obj = {
+        enabled: enabled,
+        password: !accountSourceIsExternal
+      }
+
+      if (accountSourceIsExternal) {
+        obj.source = external[0].service
+      }
+
+      return obj
+    },
+    update: async function (user, data) {
+      user = await API.User.ensureObject(user)
+      if (!user) return {error: 'No such user.'}
+
+      data = Object.assign({
+        updated_at: new Date()
+      }, data)
+
+      return models.User.query().patchAndFetchById(user.id, data)
+    },
     Login: {
       password: async function (user, password) {
-        user = await API.User.ensureObject(user)
+        user = await API.User.ensureObject(user, ['password'])
         if (!user.password) return false
         return bcryptTask({task: 'compare', password: password, hash: user.password})
       },
@@ -193,6 +226,7 @@ const API = {
         let email = config.email && config.email.enabled
         let data = Object.assign(regdata, {
           created_at: new Date(),
+          updated_at: new Date(),
           activated: email ? 0 : 1
         })
 
