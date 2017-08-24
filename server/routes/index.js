@@ -184,6 +184,19 @@ router.get('/user/manage/password', wrap(async (req, res) => {
   res.render('password_new')
 }))
 
+router.get('/user/manage/email', wrap(async (req, res) => {
+  if (!req.session.user) return res.redirect('/login')
+
+  let obfuscated = req.session.user.email
+  if (obfuscated) {
+    let split = obfuscated.split('@')
+    let rep = split[0].charAt(0) + '***' + split[0].charAt(split[0].length - 1)
+    obfuscated = rep + '@' + split[1]
+  }
+
+  res.render('email_change', {email: obfuscated})
+}))
+
 /*
   =================
     POST HANDLING
@@ -481,6 +494,53 @@ router.post('/user/manage/password', wrap(async (req, res, next) => {
   }
 
   req.flash('message', {error: false, text: 'Password changed successfully.'})
+  return res.redirect('/user/manage')
+}))
+
+router.post('/user/manage/email', wrap(async (req, res, next) => {
+  if (!req.session.user) return next()
+
+  if (req.body.csrf !== req.session.csrf) {
+    return formError(req, res, 'Invalid session! Try reloading the page.')
+  }
+
+  let user = req.session.user
+  let email = req.body.email
+  let newEmail = req.body.email_new
+  let password = req.body.password
+
+  if (!password || !newEmail || (!email && user.email != null)) {
+    return formError(req, res, 'Please fill in all of the fields.')
+  }
+
+  if (req.session.user.email != null && email !== user.email) {
+    return formError(req, res, 'The email you provided is incorrect.')
+  }
+
+  let passwordMatch = await API.User.Login.password(user, password)
+  if (!passwordMatch) {
+    return formError(req, res, 'The password you provided is incorrect.')
+  }
+
+  let emailValid = API.User.Register.validateEmail(newEmail)
+  if (!emailValid) {
+    return formError(req, res, 'Invalid email address.')
+  }
+
+  let success = await API.User.update(user, {
+    email: newEmail
+  })
+
+  if (success.error) {
+    return formError(req, res, success.error)
+  }
+
+  // TODO: Send necessary emails
+  console.warn('[SECURITY AUDIT] User \'%s\' email has been changed from %s', user.username, req.realIP)
+
+  req.session.user.email = newEmail
+
+  req.flash('message', {error: false, text: 'Email changed successfully.'})
   return res.redirect('/user/manage')
 }))
 

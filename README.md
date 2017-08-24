@@ -1,5 +1,5 @@
 # IcyNet.eu
-Icy Network Primary Web Application - Authentication and News - Coming Soon
+Icy Network Primary Web Application - Authentication and News
 
 ## About Icy Network
 Icy Network is a community network aimed at anyone who likes friendly discussions and playing multiplayer games, such as Minecraft.
@@ -7,7 +7,6 @@ Icy Network is a community network aimed at anyone who likes friendly discussion
 ### Currently IcyNet-owned community platforms
 * mc.icynet.eu - Minecraft Server
 * [Discord server](https://discord.gg/Xe7MKSx)
-* matrix.icynet.eu - Matrix server
 * icynet.ml - IRC Network
 
 ## The Goal of this Application

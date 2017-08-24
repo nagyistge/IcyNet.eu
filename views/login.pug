@@ -8,12 +8,13 @@ block body
 			.box#login
 				h1 Log in
 				.left
-					if message
+					if message.text
 						if message.error
 							.message.error
+								span #{message.text}
 						else
 							.message
-						span #{message.text}
+								span #{message.text}
 					form#loginForm(method="POST", action="")
 						input(type="hidden", name="csrf", value=csrf)
 						label(for="username") Username or Email Address
