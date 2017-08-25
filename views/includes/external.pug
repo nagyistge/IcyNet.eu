@@ -21,10 +21,10 @@
 			}(document, 'script', 'facebook-jssdk'));
 		fb:login-button(scope="public_profile,email", onlogin="checkLoginState();" data-max-rows="1", data-size="large", data-button-type="login_with", data-show-faces="false", data-auto-logout-link="false", data-use-continue-as="false")
 	if twitter_auth
-		a.twitterLogin(href="/api/external/twitter/login")
+		a.twitterLogin.loginDiag(href="/api/external/twitter/login")
 			i.fa.fa-fw.fa-twitter
 			span Log in With Twitter
 	if discord_auth
-		a.discordLogin(href="/api/external/discord/login")
+		a.discordLogin.loginDiag(href="/api/external/discord/login")
 			img(src="/static/image/Discord-Logo-White.svg")
 			span Log in With Discord

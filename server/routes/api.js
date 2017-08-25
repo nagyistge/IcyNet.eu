@@ -159,7 +159,7 @@ router.get('/external/twitter/callback', wrap(async (req, res) => {
     uri = createSession(req, user)
   }
 
-  res.redirect(uri)
+  res.render('redirect', {url: uri})
 }))
 
 router.get('/external/twitter/remove', wrap(async (req, res) => {
@@ -229,7 +229,7 @@ router.get('/external/discord/callback', wrap(async (req, res) => {
     uri = createSession(req, user)
   }
 
-  res.redirect(uri)
+  res.render('redirect', {url: uri})
 }))
 
 router.get('/external/discord/remove', wrap(async (req, res) => {

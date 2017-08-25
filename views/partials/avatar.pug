@@ -92,6 +92,7 @@ script.
 
 	function ready (blob) {
 		let match = blob.match(/data:image\/(\w+);/)
+		let screenlen = $('.mobview').is(':visible')
 		if (!match) {
 			return message('Not an image file!')
 		}
@@ -108,8 +109,8 @@ script.
 		$('.editor').show()
 		$('#image').cropper({
 			aspectRatio: 1 / 1,
-			minContainerHeight: 512,
-			minContainerWidth: 512,
+			minContainerHeight: screenlen ? 128 : 512,
+			minContainerWidth: screenlen ? 128 : 512,
 			viewMode: 1
 		})
 	}

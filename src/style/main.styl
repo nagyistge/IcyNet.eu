@@ -280,7 +280,7 @@ input:not([type="submit"])
     display: block
     padding: 10px
     width: 215px
-    margin: 5px 0
+    margin-top: 5px
     background-color: #fff
     border: 1px solid #ddd
     border-radius: 5px
@@ -296,12 +296,13 @@ input:not([type="submit"])
         margin-left: 12px;
 
 .discordLogin
-    display: block;
-    background-color: #99AAB5;
-    width: 225px;
-    height: 40px;
-    padding: 5px 5px;
-    border-radius: 5px;
+    display: block
+    background-color: #99AAB5
+    width: 225px
+    height: 40px
+    margin-top: 5px
+    padding: 5px 5px
+    border-radius: 5px
     text-decoration: none
     span
         color: white
@@ -312,6 +313,14 @@ input:not([type="submit"])
     img
         width: 45px
         display: inline-block
+
+.accdisconnect
+    margin-top: 5px
+    padding: 10px
+    background-color: #ff6c6c
+    color: #fff
+    width: 215px
+    border-radius: 5px
 
 span.divider
     color: #ddd
@@ -565,6 +574,9 @@ input.invalid
             border: 0 !important
             width: fit-content !important
             margin: auto
+    .dialog
+        width: 100vw !important
+        min-width: 100vw !important
 
 @media all and (max-width: 500px)
     section

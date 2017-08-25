@@ -1,0 +1,15 @@
+extends layout.pug
+block title
+	|Icy Network - Redirecting
+
+block body
+	.wrapper
+		.boxcont
+			.box#totpcheck
+				h1 Redirecting
+				p Please wait..
+				script.
+					window.close()
+					setTimeout(() => {
+						window.location.href = '#{url}'
+					}, 1000)

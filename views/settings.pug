@@ -21,7 +21,7 @@ block body
 						input(type="text", name="username", id="username", value=user.username, disabled)
 						label(for="display_name") Display Name
 						input(type="text", name="display_name", id="display_name", value=user.display_name)
-						label(for="display_name") Avatar
+						label Avatar
 						.avatarCont
 							include includes/avatar.pug
 							.options
@@ -33,11 +33,17 @@ block body
 					h3 Social Media Accounts
 					include includes/external.pug
 					if twitter_auth == false
-						a.option(href="/api/external/twitter/remove") Unlink Twitter
+						a.option.accdisconnect(href="/api/external/twitter/remove")
+							i.fa.fa-fw.fa-times
+							|Unlink Twitter
 					if facebook_auth == false
-						a.option(href="/api/external/facebook/remove") Unlink Facebook
+						a.option.accdisconnect(href="/api/external/facebook/remove")
+							i.fa.fa-fw.fa-times
+							|Unlink Facebook
 					if discord_auth == false
-						a.option(href="/api/external/discord/remove") Unlink Discord
+						a.option.accdisconnect(href="/api/external/discord/remove")
+							i.fa.fa-fw.fa-times
+							|Unlink Discord
 					h3 Other Options
 					if password
 						a.option(href="/user/manage/password")
