@@ -1,5 +1,6 @@
 import express from 'express'
 import RateLimit from 'express-rate-limit'
+import path from 'path'
 import multiparty from 'multiparty'
 import config from '../../scripts/load-config'
 import wrap from '../../scripts/asyncRoute'
@@ -7,6 +8,8 @@ import API from '../api'
 import News from '../api/news'
 import Image from '../api/image'
 import APIExtern from '../api/external'
+
+const userContent = path.join(__dirname, '../..', 'usercontent')
 
 let router = express.Router()
 
@@ -325,6 +328,32 @@ router.post('/avatar/remove', wrap(async (req, res, next) => {
 
   res.status(200).jsonp({done: true})
 }))
+
+router.get('/avatar', wrap(async (req, res, next) => {
+  if (!req.session.user) return next()
+  let user = req.session.user
+
+  if (!user.avatar_file) return next()
+
+  res.header('Cache-Control', 'max-age=' + 7 * 24 * 60 * 60 * 1000) // 1 week
+  res.redirect('/usercontent/images/' + user.avatar_file)
+}))
+
+router.get('/avatar/:id', wrap(async (req, res, next) => {
+  let id = parseInt(req.params.id)
+  if (isNaN(id)) return next()
+
+  let user = await API.User.get(id)
+
+  if (!user || !user.avatar_file) return next()
+
+  res.header('Cache-Control', 'max-age=' + 7 * 24 * 60 * 60 * 1000) // 1 week
+  res.redirect('/usercontent/images/' + user.avatar_file)
+}))
+
+router.use('/avatar', (req, res) => {
+  res.redirect('/static/image/avatar.png')
+})
 
 // 404
 router.use((req, res) => {
