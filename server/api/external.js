@@ -4,6 +4,9 @@ import models from './models'
 import UAPI from './index'
 import qs from 'querystring'
 import oauth from 'oauth-libre'
+import fs from 'fs'
+import path from 'path'
+import url from 'url'
 
 let twitterApp
 let discordApp
@@ -50,6 +53,23 @@ const API = {
       }
 
       return models.External.query().delete().where('user_id', user.id).andWhere('service', service)
+    },
+    saveAvatar: async (avatarUrl) => {
+      if (!avatarUrl) return null
+      let imgdir = path.join(__dirname, '../../', 'usercontent', 'images')
+      let imageName = 'download-' + UAPI.Hash(12)
+      let uridata = url.parse(avatarUrl)
+      let pathdata = path.parse(uridata.path)
+
+      imageName += pathdata.ext || '.png'
+
+      try {
+        await http.Download(avatarUrl, path.join(imgdir, imageName))
+      } catch (e) {
+        return null
+      }
+
+      return {fileName: imageName}
     }
   },
   Facebook: {
@@ -96,11 +116,13 @@ const API = {
       }
 
       // Determine profile picture
-      let profilepic = ''
+      let profilepic = null
       if (fbdata.picture) {
         if (fbdata.picture.is_silhouette === false && fbdata.picture.url) {
-          // TODO: Download the profile image and save it locally
-          profilepic = fbdata.picture.url
+          let imgdata = await API.Common.saveAvatar(fbdata.picture.url)
+          if (imgdata && imgdata.fileName) {
+            profilepic = imgdata.fileName
+          }
         }
       }
 
@@ -211,10 +233,12 @@ const API = {
       }
 
       // Determine profile picture
-      let profilepic = ''
+      let profilepic = null
       if (twdata.profile_image_url_https) {
-        // TODO: Download the profile image and save it locally
-        profilepic = twdata.profile_image_url_https
+        let imgdata = await API.Common.saveAvatar(twdata.profile_image_url_https)
+        if (imgdata && imgdata.fileName) {
+          profilepic = imgdata.fileName
+        }
       }
 
       // Create a new user
@@ -326,8 +350,7 @@ const API = {
       }
 
       // Determine profile picture
-      let profilepic = ''
-      // TODO: Download the profile image and save it locally
+      let profilepic = null
 
       // Create a new user
       let udataLimited = {

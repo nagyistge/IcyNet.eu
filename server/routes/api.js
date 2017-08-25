@@ -1,15 +1,24 @@
 import express from 'express'
 import RateLimit from 'express-rate-limit'
+import multiparty from 'multiparty'
 import config from '../../scripts/load-config'
 import wrap from '../../scripts/asyncRoute'
-import APIExtern from '../api/external'
+import API from '../api'
 import News from '../api/news'
+import Image from '../api/image'
+import APIExtern from '../api/external'
 
 let router = express.Router()
 
 let apiLimiter = new RateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes
   max: 100,
+  delayMs: 0
+})
+
+let uploadLimiter = new RateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10,
   delayMs: 0
 })
 
@@ -275,6 +284,46 @@ router.get('/news', wrap(async (req, res) => {
   let articles = await News.preview()
 
   res.jsonp(articles)
+}))
+
+async function promiseForm (req) {
+  let form = new multiparty.Form()
+  return new Promise(function (resolve, reject) {
+    form.parse(req, async (err, fields, files) => {
+      if (err) return reject(err)
+      resolve({fields: fields, files: files})
+    })
+  })
+}
+
+router.post('/avatar', uploadLimiter, wrap(async (req, res, next) => {
+  if (!req.session.user) return next()
+  let data = await promiseForm(req)
+  let result = await Image.uploadImage(req.session.user.username, data.fields, data.files)
+
+  if (result.error) {
+    return res.status(400).jsonp({error: result.error})
+  }
+
+  let avatarUpdate = await API.User.changeAvatar(req.session.user, result.file)
+  if (avatarUpdate.error) {
+    return res.status(400).jsonp({error: avatarUpdate.error})
+  }
+
+  if (avatarUpdate.file) {
+    req.session.user.avatar_file = avatarUpdate.file
+  }
+
+  res.status(200).jsonp({})
+}))
+
+router.post('/avatar/remove', wrap(async (req, res, next) => {
+  if (!req.session.user) return next()
+
+  await API.User.removeAvatar(req.session.user)
+  req.session.user.avatar_file = null
+
+  res.status(200).jsonp({done: true})
 }))
 
 // 404

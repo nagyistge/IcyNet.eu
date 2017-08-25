@@ -23,6 +23,7 @@ block body
 						input(type="email", name="email", id="email")
 					label(for="email_new") New Email Address
 					input(type="email", name="email_new", id="email_new")
-					label(for="password") Password
-					input(type="password", name="password", id="password")
+					if password
+						label(for="password") Password
+						input(type="password", name="password", id="password")
 					input(type="submit", value="Change")

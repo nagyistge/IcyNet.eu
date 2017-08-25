@@ -1,1 +1,155 @@
-img(src=user.avatar_file)
+.rel.cropbox
+	link(rel="stylesheet", type="text/css", href="https://cdnjs.cloudflare.com/ajax/libs/cropper/2.3.4/cropper.min.css")
+	script(src="https://cdnjs.cloudflare.com/ajax/libs/cropper/2.3.4/cropper.min.js")
+	.otherdata
+		h3 Current Avatar
+		.avatar
+			include ../includes/avatar.pug
+	.inputting
+		h3 Upload new
+		.message.error
+		input(type="file", id="fileinput")
+	.editor(style="display: none")
+		h3 Crop the image
+		img.preview(id="image")
+		.buttons
+			.button#done Done
+			.button#cancel Cancel
+			.button#upload Upload Now
+
+script.
+	window.jQuery = $
+	function message (msg) {
+		$('.message').text(msg)
+		$('.message').show()
+	}
+
+	function dataURItoBlob (dataURI) {
+		// convert base64 to raw binary data held in a string
+		// doesn't handle URLEncoded DataURIs - see SO answer #6850276 for code that does this
+		var byteString = atob(dataURI.split(',')[1])
+
+		// separate out the mime component
+		var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0]
+
+		// write the bytes of the string to an ArrayBuffer
+		var ab = new ArrayBuffer(byteString.length)
+
+		// create a view into the buffer
+		var ia = new Uint8Array(ab)
+
+		// set the bytes of the buffer to the correct values
+		for (var i = 0; i < byteString.length; i++) {
+		  ia[i] = byteString.charCodeAt(i)
+		}
+
+		// write the ArrayBuffer to a blob, and you're done
+		var blob = new Blob([ab], {type: mimeString})
+		return blob
+	}
+
+	function cropReady() {
+		let cropargs = $('#image').cropper('getData')
+		let cropimage = $('#image').cropper('getCroppedCanvas')
+
+		$('#upload').show()
+		$('#done').hide()
+		$('.preview').attr('src', cropimage.toDataURL())
+		$('.preview').show()
+		$('#image').cropper('destroy')
+
+		let called = false
+		$('#upload').click(function (e) {
+			if (called) return
+			called = true
+			$('#upload').hide()
+			let formData = new FormData()
+			formData.append('image', dataURItoBlob(fr.result))
+			
+			for (let i in cropargs) {
+				formData.append(i, cropargs[i])
+			}
+			
+			$.ajax({
+				type: 'POST',
+				url: '/api/avatar',
+				data: formData,
+				processData: false,
+				contentType: false,
+				success: function (data) {
+					window.Dialog.close()
+					window.location.reload()
+				},
+				error: function (err) {
+					if (err.responseJSON && err.responseJSON.error) {
+						message(err.responseJSON.error)
+					}
+					$('#cancel').click()
+				}
+			})
+		})
+	}
+
+	function ready (blob) {
+		let match = blob.match(/data:image\/(\w+);/)
+		if (!match) {
+			return message('Not an image file!')
+		}
+
+		if (match[1] !== 'png' && match[1] !== 'jpg' && match[1] !== 'jpeg') {
+			return message('Unsupported image file')
+		}
+
+		$('#image').attr('src', fr.result).hide()
+		$('.inputting').hide()
+		$('.otherdata').hide()
+		$('#upload').hide()
+		$('#done').show()
+		$('.editor').show()
+		$('#image').cropper({
+			aspectRatio: 1 / 1,
+			minContainerHeight: 512,
+			minContainerWidth: 512,
+			viewMode: 1
+		})
+	}
+
+	function handleFileSelect() {
+		if (!window.File || !window.FileReader || !window.FileList || !window.Blob) {
+			return message('The File APIs are not fully supported in this browser.')
+		}
+
+		let input = document.getElementById('fileinput')
+		if (!input.files) {
+			message('This browser doesn\'t seem to support the `files` property of file inputs.')
+		} else if (!input.files[0]) {
+			message('Please select a file.')
+		} else {
+			file = input.files[0]
+			fr = new FileReader()
+			fr.readAsDataURL(file)
+			fr.addEventListener('load', function (e) {
+				ready(fr.result)
+			})
+			return
+		}
+	}
+
+	$('#fileinput').on('change', function (e) {
+		e.preventDefault()
+		handleFileSelect()
+	})
+
+	$('#cancel').click(function (e) {
+		$('.inputting').show()
+		$('.otherdata').show()
+		$('.editor').hide()
+		$('#image').cropper('destroy')
+	})
+
+	$('#done').click(function (e) {
+		cropReady()
+	})
+
+	$('.message').hide()
+

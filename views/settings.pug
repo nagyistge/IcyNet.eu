@@ -21,6 +21,13 @@ block body
 						input(type="text", name="username", id="username", value=user.username, disabled)
 						label(for="display_name") Display Name
 						input(type="text", name="display_name", id="display_name", value=user.display_name)
+						label(for="display_name") Avatar
+						.avatarCont
+							include includes/avatar.pug
+							.options
+								a#newAvatar(href='#') Change Avatar
+								if user.avatar_file
+									a#removeAvatar(href='#') Remove Avatar
 						input(type="submit", value="Save Settings")
 				.right
 					h3 Social Media Accounts

@@ -1,0 +1,6 @@
+.avatar
+	if user.avatar_file
+		img(src="/usercontent/images/" + user.avatar_file)
+	else
+		.noavatar
+			i.fa.fa-fw.fa-user

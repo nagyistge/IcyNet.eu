@@ -6,6 +6,7 @@ import crypto from 'crypto'
 import notp from 'notp'
 import base32 from 'thirty-two'
 import emailer from './emailer'
+import fs from 'fs'
 
 const emailRe = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 
@@ -118,6 +119,38 @@ const API = {
       }, data)
 
       return models.User.query().patchAndFetchById(user.id, data)
+    },
+    changeAvatar: async function (user, fileName) {
+      user = await API.User.ensureObject(user, ['avatar_file'])
+      let uploadsDir = path.join(__dirname, '../../', 'usercontent', 'images')
+      let pathOf = path.join(uploadsDir, fileName)
+
+      if (!fs.existsSync(pathOf)) {
+        return {error: 'No such file'}
+      }
+
+      // Delete previous upload
+      if (user.avatar_file != null) {
+        let file = path.join(uploadsDir, user.avatar_file)
+        if (fs.existsSync(file)) {
+          fs.unlinkSync(file)
+        }
+      }
+
+      await API.User.update(user, {avatar_file: fileName})
+      return { file: fileName }
+    },
+    removeAvatar: async function (user) {
+      user = await API.User.ensureObject(user, ['avatar_file'])
+      let uploadsDir = path.join(__dirname, '../../', 'usercontent', 'images')
+      if (!user.avatar_file) return {}
+
+      let file = path.join(uploadsDir, user.avatar_file)
+      if (fs.existsSync(file)) {
+        fs.unlinkSync(file)
+      }
+
+      return API.User.update(user, {avatar_file: null})
     },
     Login: {
       password: async function (user, password) {

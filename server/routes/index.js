@@ -192,7 +192,9 @@ router.get('/user/manage/email', ensureLogin, wrap(async (req, res) => {
     obfuscated = rep + '@' + split[1]
   }
 
-  res.render('email_change', {email: obfuscated})
+  let socialStatus = await API.User.socialStatus(req.session.user)
+
+  res.render('email_change', {email: obfuscated, password: socialStatus.password})
 }))
 
 /*
@@ -519,27 +521,38 @@ router.post('/user/manage/email', wrap(async (req, res, next) => {
     return formError(req, res, 'Invalid session! Try reloading the page.')
   }
 
-  let user = req.session.user
+  let user = await API.User.get(req.session.user)
   let email = req.body.email
   let newEmail = req.body.email_new
   let password = req.body.password
 
-  if (!password || !newEmail || (!email && user.email != null)) {
+  if (!newEmail || (!email && user.email !== '')) {
     return formError(req, res, 'Please fill in all of the fields.')
   }
 
-  if (req.session.user.email != null && email !== user.email) {
+  if (req.session.user.email !== '' && email !== user.email) {
     return formError(req, res, 'The email you provided is incorrect.')
   }
 
-  let passwordMatch = await API.User.Login.password(user, password)
-  if (!passwordMatch) {
-    return formError(req, res, 'The password you provided is incorrect.')
+  if (user.password != null && user.password !== '') {
+    if (!password) {
+      return formError(req, res, 'Enter a password.')
+    }
+
+    let passwordMatch = await API.User.Login.password(user, password)
+    if (!passwordMatch) {
+      return formError(req, res, 'The password you provided is incorrect.')
+    }
   }
 
   let emailValid = API.User.Register.validateEmail(newEmail)
   if (!emailValid) {
     return formError(req, res, 'Invalid email address.')
+  }
+
+  let emailTaken = await API.User.get(newEmail)
+  if (emailTaken) {
+    return formError(req, res, 'This email is already taken.')
   }
 
   let success = await API.User.update(user, {

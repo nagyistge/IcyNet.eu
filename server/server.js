@@ -61,6 +61,7 @@ module.exports = (args) => {
   app.use('/style', express.static(path.join(__dirname, '../build/style'), { maxAge: staticAge }))
   app.use('/script', express.static(path.join(__dirname, '../build/script'), { maxAge: staticAge }))
   app.use('/static', express.static(path.join(__dirname, '../static'), { maxAge: staticAge }))
+  app.use('/usercontent', express.static(path.join(__dirname, '../usercontent'), { maxAge: staticAge }))
 
   app.use(routes)
 

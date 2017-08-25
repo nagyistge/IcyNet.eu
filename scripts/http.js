@@ -1,5 +1,6 @@
 import url from 'url'
 import qs from 'querystring'
+import fs from 'fs'
 
 function HTTP_GET (link, headers = {}, lback) {
   if (lback && lback >= 4) throw new Error('infinite loop!') // Prevent infinite loop requests
@@ -105,7 +106,24 @@ function HTTP_POST (link, headers = {}, data) {
   })
 }
 
+async function Download (url, dest) {
+  return new Promise((resolve, reject) => {
+    let file = fs.createWriteStream(dest)
+    let protocol = url.indexOf('https:') === 0 ? require('https') : require('http')
+    protocol.get(url, function (response) {
+      response.pipe(file)
+      file.on('finish', function () {
+        file.close(resolve)
+      })
+    }).on('error', function (err) {
+      fs.unlink(dest)
+      reject(err)
+    })
+  })
+}
+
 module.exports = {
   GET: HTTP_GET,
-  POST: HTTP_POST
+  POST: HTTP_POST,
+  Download: Download
 }

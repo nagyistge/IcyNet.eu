@@ -131,6 +131,24 @@ $(document).ready(function () {
     })
   }
 
+  if ($('#newAvatar').length) {
+    $('#newAvatar').click(function (e) {
+      e.preventDefault()
+      window.Dialog.openPartial('Change Avatar', 'avatar')
+    })
+
+    $('#removeAvatar').click(function (e) {
+      e.preventDefault()
+      $.ajax({
+        type: 'POST',
+        url: '/api/avatar/remove',
+        success: function (data) {
+          window.location.reload()
+        }
+      })
+    })
+  }
+
   window.checkLoginState = function () {
     var FB = window.FB
     FB.getLoginStatus(function (response) {
