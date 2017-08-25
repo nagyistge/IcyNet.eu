@@ -85,6 +85,12 @@ function extraButtons (req, res, next) {
   next()
 }
 
+function ensureLogin (req, res, next) {
+  if (req.session.user) return next()
+  req.session.redirectUri = req.originalUrl
+  res.redirect('/login')
+}
+
 router.get('/login', extraButtons, (req, res) => {
   if (req.session.user) {
     let uri = '/'
@@ -118,8 +124,7 @@ router.get('/register', extraButtons, (req, res) => {
   res.render('register')
 })
 
-router.get('/user/two-factor', wrap(async (req, res) => {
-  if (!req.session.user) return res.redirect('/login')
+router.get('/user/two-factor', ensureLogin, wrap(async (req, res) => {
   let twoFaEnabled = await API.User.Login.totpTokenRequired(req.session.user)
   if (twoFaEnabled) return res.redirect('/')
 
@@ -129,8 +134,7 @@ router.get('/user/two-factor', wrap(async (req, res) => {
   res.render('totp', { uri: newToken })
 }))
 
-router.get('/user/two-factor/disable', wrap(async (req, res) => {
-  if (!req.session.user) return res.redirect('/login')
+router.get('/user/two-factor/disable', ensureLogin, wrap(async (req, res) => {
   let twoFaEnabled = await API.User.Login.totpTokenRequired(req.session.user)
 
   if (!twoFaEnabled) return res.redirect('/')
@@ -141,9 +145,7 @@ router.get('/login/verify', (req, res) => {
   res.render('totp-check')
 })
 
-router.get('/user/manage', wrap(async (req, res) => {
-  if (!req.session.user) return res.redirect('/login')
-
+router.get('/user/manage', ensureLogin, wrap(async (req, res) => {
   let totpEnabled = false
   let socialStatus = await API.User.socialStatus(req.session.user)
 
@@ -178,15 +180,11 @@ router.get('/user/manage', wrap(async (req, res) => {
   res.render('settings', {totp: totpEnabled, password: socialStatus.password})
 }))
 
-router.get('/user/manage/password', wrap(async (req, res) => {
-  if (!req.session.user) return res.redirect('/login')
-
+router.get('/user/manage/password', ensureLogin, wrap(async (req, res) => {
   res.render('password_new')
 }))
 
-router.get('/user/manage/email', wrap(async (req, res) => {
-  if (!req.session.user) return res.redirect('/login')
-
+router.get('/user/manage/email', ensureLogin, wrap(async (req, res) => {
   let obfuscated = req.session.user.email
   if (obfuscated) {
     let split = obfuscated.split('@')
@@ -216,7 +214,16 @@ function formError (req, res, error, redirect) {
   res.redirect(redirect || parseurl(req).path)
 }
 
-router.post('/user/two-factor', wrap(async (req, res) => {
+function cleanString (input) {
+  let output = ''
+  for (let i = 0; i < input.length; i++) {
+    output += input.charCodeAt(i) <= 127 ? input.charAt(i) : ''
+  }
+  return output
+}
+
+router.post('/user/two-factor', wrap(async (req, res, next) => {
+  if (!req.session.user) return next()
   if (!req.body.code) {
     return formError(req, res, 'You need to enter the code.')
   }
@@ -233,7 +240,8 @@ router.post('/user/two-factor', wrap(async (req, res) => {
   res.redirect('/')
 }))
 
-router.post('/user/two-factor/disable', wrap(async (req, res) => {
+router.post('/user/two-factor/disable', wrap(async (req, res, next) => {
+  if (!req.session.user) return next()
   if (req.body.csrf !== req.session.csrf) {
     return formError(req, res, 'Invalid session! Try reloading the page.')
   }
@@ -250,7 +258,8 @@ router.post('/user/two-factor/disable', wrap(async (req, res) => {
   res.redirect('/')
 }))
 
-router.post('/login/verify', wrap(async (req, res) => {
+router.post('/login/verify', wrap(async (req, res, next) => {
+  if (req.session.user) return next()
   if (req.session.totp_check === null) return res.redirect('/login')
   if (!req.body.code && !req.body.recovery) {
     return formError(req, res, 'You need to enter the code.')
@@ -291,8 +300,9 @@ router.post('/login/verify', wrap(async (req, res) => {
   res.redirect(uri)
 }))
 
-router.post('/login', wrap(async (req, res) => {
-  if (!req.body.username || !req.body.password) {
+router.post('/login', wrap(async (req, res, next) => {
+  if (req.session.user) return next()
+  if (!req.body.username || !req.body.password || req.body.username === '') {
     return res.redirect('/login')
   }
 
@@ -302,6 +312,8 @@ router.post('/login', wrap(async (req, res) => {
 
   let user = await API.User.get(req.body.username)
   if (!user) return formError(req, res, 'Invalid username or password.')
+
+  if (!user.password || user.password === '') return formError(req, res, 'Please log in using the buttons on the right.')
 
   let pwMatch = await API.User.Login.password(user, req.body.password)
   if (!pwMatch) return formError(req, res, 'Invalid username or password.')
@@ -333,7 +345,8 @@ router.post('/login', wrap(async (req, res) => {
   res.redirect(uri)
 }))
 
-router.post('/register', accountLimiter, wrap(async (req, res) => {
+router.post('/register', accountLimiter, wrap(async (req, res, next) => {
+  if (req.session.user) return next()
   if (!req.body.username || !req.body.display_name || !req.body.password || !req.body.email) {
     return formError(req, res, 'Please fill in all the fields.')
   }
@@ -344,7 +357,7 @@ router.post('/register', accountLimiter, wrap(async (req, res) => {
 
   // 1st Check: Username Characters and length
   let username = req.body.username
-  if (!username || !username.match(/^([\w-]{3,26})$/i)) {
+  if (!username || !username.match(/^([\w-_]{3,26})$/i)) {
     return formError(req, res, 'Invalid username! Must be between 3-26 characters and composed of alphanumeric characters!')
   }
 
@@ -398,7 +411,7 @@ router.post('/register', accountLimiter, wrap(async (req, res) => {
   // Attempt to create the user
   let newUser = await API.User.Register.newAccount({
     username: username,
-    display_name: displayName,
+    display_name: cleanString(displayName),
     password: hash,
     email: email,
     ip_address: req.realIP
@@ -427,6 +440,8 @@ router.post('/user/manage', wrap(async (req, res, next) => {
   if (!displayName || !displayName.match(/^([^\\`]{3,32})$/i)) {
     return formError(req, res, 'Invalid display name!')
   }
+
+  displayName = cleanString(displayName)
 
   // No change
   if (displayName === req.session.user.display_name) {
@@ -458,7 +473,8 @@ router.post('/user/manage/password', wrap(async (req, res, next) => {
     return formError(req, res, 'Please enter your current password.')
   }
 
-  let passwordMatch = await API.User.Login.password(req.session.user, req.body.password_old)
+  let user = req.session.user
+  let passwordMatch = await API.User.Login.password(user, req.body.password_old)
   if (!passwordMatch) {
     return formError(req, res, 'The password you provided is incorrect.')
   }
@@ -475,7 +491,7 @@ router.post('/user/manage/password', wrap(async (req, res, next) => {
 
   password = await API.User.Register.hashPassword(password)
 
-  let success = await API.User.update(req.session.user, {
+  let success = await API.User.update(user, {
     password: password
   })
 
@@ -483,7 +499,6 @@ router.post('/user/manage/password', wrap(async (req, res, next) => {
     return formError(req, res, success.error)
   }
 
-  let user = req.session.user
   console.warn('[SECURITY AUDIT] User \'%s\' password has been changed from %s', user.username, req.realIP)
 
   if (config.email && config.email.enabled) {
@@ -557,7 +572,11 @@ router.get('/docs/:name', (req, res, next) => {
     return next()
   }
 
-  doc = fs.readFileSync(doc, {encoding: 'utf8'})
+  try {
+    doc = fs.readFileSync(doc, {encoding: 'utf8'})
+  } catch (e) {
+    return next(e)
+  }
 
   res.render('document', {doc: doc})
 })
@@ -587,6 +606,12 @@ router.get('/news/', wrap(async (req, res) => {
   res.render('news', {news: news})
 }))
 
+router.get('/partials/:view', wrap(async (req, res, next) => {
+  if (!req.params.view) return next()
+
+  res.render('partials/' + req.params.view)
+}))
+
 /*
   =========
     OTHER
@@ -614,12 +639,34 @@ router.get('/activate/:token', wrap(async (req, res) => {
 
 router.use('/api', apiRouter)
 
+/*
+  NO ROUTES BEYOND THIS POINT
+*/
+
+// Handle 'Failed to lookup view' errors
+router.use((err, req, res, next) => {
+  if (err && err.stack) {
+    if (err.stack.indexOf('Failed to lookup view') !== -1) {
+      return next() // To 404
+    }
+  }
+
+  next(err) // To error handler
+})
+
+// 404 - last route
 router.use((req, res) => {
   res.status(404).render('404')
 })
 
+// Error handler
 router.use((err, req, res, next) => {
   console.error(err)
+
+  if (process.env.NODE_ENV !== 'production') {
+    return res.end(err.stack)
+  }
+
   next()
 })
 

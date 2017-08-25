@@ -2,7 +2,6 @@ import express from 'express'
 import uapi from '../api'
 import OAuth2 from '../api/oauth2'
 import RateLimit from 'express-rate-limit'
-import config from '../../scripts/load-config'
 import wrap from '../../scripts/asyncRoute'
 
 let router = express.Router()
@@ -19,12 +18,9 @@ let oauthLimiter = new RateLimit({
 router.use(oauthLimiter)
 
 function ensureLoggedIn (req, res, next) {
-  if (req.session.user) {
-    next()
-  } else {
-    req.session.redirectUri = req.originalUrl
-    res.redirect('/login')
-  }
+  if (req.session.user) return next()
+  req.session.redirectUri = req.originalUrl
+  res.redirect('/login')
 }
 
 router.use('/authorize', ensureLoggedIn, oauth.controller.authorization)

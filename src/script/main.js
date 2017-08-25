@@ -15,6 +15,37 @@ $(document).ready(function () {
     }
   }
 
+  window.Dialog = $('#dialog')
+  window.Dialog.open = function (title, content, pad) {
+    $('#dialog #title').text(title)
+    if (pad) {
+      content = '<div class="pad">' + content + '</div>'
+    }
+    $('#dialog #content').html(content)
+    $('#dialog').fadeIn()
+  }
+
+  window.Dialog.close = function () {
+    $('#dialog').fadeOut('fast', function () {
+      $('#dialog #content').html('')
+    })
+  }
+
+  window.Dialog.openPartial = function (title, partial) {
+    $.get({
+      url: '/partials/' + partial,
+      success: function (html) {
+        window.Dialog.open(title, html, false)
+      }
+    }).fail(function (e) {
+      console.error(e)
+    })
+  }
+
+  $('#dialog #close').click(function (e) {
+    window.Dialog.close()
+  })
+
   if (window.location.hash) {
     var locha = window.location.hash
     if ($(locha).length) {

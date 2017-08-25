@@ -441,6 +441,50 @@ input.invalid
 .option
     display: block
 
+.dialog-drop
+    display: block
+    position: fixed
+    display: none
+    top: 0
+    left: 0
+    bottom: 0
+    right: 0
+    background-color: rgba(56, 56, 56, 0.8)
+    z-index: 10
+    .dialog
+        min-width: 400px
+        width: fit-content
+        max-width: 50vw
+        min-height: 180px
+        height: fit-content
+        background-color: #fff
+        margin: auto
+        margin-top: 5%
+        transition: all 0.1s linear
+        overflow: hidden
+        .pad
+            padding: 5px
+        .head
+            height: 40px
+            background-color: #e6e6e6
+            box-shadow: 0px 3px #ddd
+            overflow: hidden
+            position: relative
+            #title
+                max-width: 80%
+                text-overflow: ellipsis
+                overflow: hidden
+                white-space: nowrap
+                margin: 12px
+                display: block
+            #close
+                position: absolute
+                top: 6px
+                right: 5px
+                color: #ff2525
+                cursor: pointer
+                padding: 5px
+
 @media all and (max-width: 800px)
     .navigator
         padding: 0 10px
