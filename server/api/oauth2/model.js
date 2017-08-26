@@ -129,7 +129,6 @@ const OAuthDB = {
       await Models.OAuth2Code.query().delete().where('user_id', userId).andWhere('client_id', clientId)
 
       const obj = { code: code, user_id: userId, client_id: clientId, scope: scope, expires_at: expr, created_at: new Date() }
-      console.log(obj)
 
       await Models.OAuth2Code.query().insert(obj)
 

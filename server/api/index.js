@@ -332,6 +332,9 @@ const API = {
         let auth = await models.OAuth2AuthorizedClient.query().where('user_id', user.id).andWhere('client_id', clientId)
         if (!auth.length) return false
 
+        await models.OAuth2AccessToken.query().delete().where('client_id', clientId).andWhere('user_id', user.id)
+        await models.OAuth2RefreshToken.query().delete().where('client_id', clientId).andWhere('user_id', user.id)
+
         for (let i in auth) {
           await models.OAuth2AuthorizedClient.query().delete().where('id', auth[i].id)
         }

@@ -55,8 +55,11 @@ $(document).ready(function () {
         if (!data.length) {
           return $('#clientlist').html('There is nothing to show at this moment.')
         }
-        var html = ''
+
+        $('#clientlist').html('')
+
         for (var i in data) {
+          var html = ''
           var client = data[i]
           html += '<div class="authclient application" data-client-id="' + client.id + '" id="client-' + client.id + '">'
           html += '<div class="remove" id="deleteclient"><i class="fa fa-fw fa-ban"></i></div>'
@@ -75,13 +78,11 @@ $(document).ready(function () {
           html += '<a class="url" href="' + client.url + '">' + client.url + '</a>'
           html += '<div class="timestamp">Authorized ' + new Date(client.created_at) + '</div>'
           html += '</div></div>'
-        }
 
-        $('#clientlist').html(html)
+          $('#clientlist').append(html)
 
-        for (let i in data) {
-          $('#client-' + data[i].id + ' #deleteclient').click(function (e) {
-            let clid = $(this).parent().data('client-id')
+          $('#client-' + client.id + ' #deleteclient').click(function (e) {
+            var clid = $(this).parent().data('client-id')
             if (clid != null) {
               removeAuthorization(clid)
             }
