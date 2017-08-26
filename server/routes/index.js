@@ -102,7 +102,7 @@ router.get('/login', extraButtons, (req, res) => {
     return res.redirect(uri)
   }
 
-  res.render('login')
+  res.render('user/login')
 })
 
 router.get('/register', extraButtons, (req, res) => {
@@ -121,7 +121,7 @@ router.get('/register', extraButtons, (req, res) => {
     res.locals.recaptcha = config.security.recaptcha.site_key
   }
 
-  res.render('register')
+  res.render('user/register')
 })
 
 router.get('/user/two-factor', ensureLogin, wrap(async (req, res) => {
@@ -131,18 +131,18 @@ router.get('/user/two-factor', ensureLogin, wrap(async (req, res) => {
   let newToken = await API.User.Login.totpAquire(req.session.user)
   if (!newToken) return res.redirect('/')
 
-  res.render('totp', { uri: newToken })
+  res.render('user/totp', { uri: newToken })
 }))
 
 router.get('/user/two-factor/disable', ensureLogin, wrap(async (req, res) => {
   let twoFaEnabled = await API.User.Login.totpTokenRequired(req.session.user)
 
   if (!twoFaEnabled) return res.redirect('/')
-  res.render('password')
+  res.render('user/password')
 }))
 
 router.get('/login/verify', (req, res) => {
-  res.render('totp-check')
+  res.render('user/totp-check')
 })
 
 router.get('/user/manage', ensureLogin, wrap(async (req, res) => {
@@ -177,11 +177,11 @@ router.get('/user/manage', ensureLogin, wrap(async (req, res) => {
     }
   }
 
-  res.render('settings', {totp: totpEnabled, password: socialStatus.password})
+  res.render('user/settings', {totp: totpEnabled, password: socialStatus.password})
 }))
 
 router.get('/user/manage/password', ensureLogin, wrap(async (req, res) => {
-  res.render('password_new')
+  res.render('user/password_new')
 }))
 
 router.get('/user/manage/email', ensureLogin, wrap(async (req, res) => {
@@ -194,7 +194,7 @@ router.get('/user/manage/email', ensureLogin, wrap(async (req, res) => {
 
   let socialStatus = await API.User.socialStatus(req.session.user)
 
-  res.render('email_change', {email: obfuscated, password: socialStatus.password})
+  res.render('user/email_change', {email: obfuscated, password: socialStatus.password})
 }))
 
 /*
@@ -622,7 +622,7 @@ router.get('/news/', wrap(async (req, res) => {
 router.get('/partials/:view', wrap(async (req, res, next) => {
   if (!req.params.view) return next()
 
-  res.render('partials/' + req.params.view)
+  res.render('user/partials/' + req.params.view)
 }))
 
 /*

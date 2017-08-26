@@ -297,6 +297,47 @@ const API = {
 
         return {error: null, user: user}
       }
+    },
+    OAuth2: {
+      getUserAuthorizations: async function (user) {
+        user = await API.User.ensureObject(user)
+        let auths = await models.OAuth2AuthorizedClient.query().where('user_id', user.id)
+
+        let nicelist = []
+
+        for (let i in auths) {
+          let auth = auths[i]
+          let client = await models.OAuth2Client.query().where('id', auth.client_id)
+
+          if (!client.length) continue
+          client = client[0]
+
+          let obj = {
+            id: client.id,
+            title: client.title,
+            description: client.description,
+            url: client.url,
+            icon: client.icon,
+            scope: client.scope.split(' '),
+            created_at: auth.created_at,
+            expires_at: auth.expires_at
+          }
+          nicelist.push(obj)
+        }
+
+        return nicelist
+      },
+      removeUserAuthorization: async function (user, clientId) {
+        user = await API.User.ensureObject(user)
+        let auth = await models.OAuth2AuthorizedClient.query().where('user_id', user.id).andWhere('client_id', clientId)
+        if (!auth.length) return false
+
+        for (let i in auth) {
+          await models.OAuth2AuthorizedClient.query().delete().where('id', auth[i].id)
+        }
+
+        return true
+      }
     }
   }
 }

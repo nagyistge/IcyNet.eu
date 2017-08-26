@@ -9,7 +9,7 @@ import News from '../api/news'
 import Image from '../api/image'
 import APIExtern from '../api/external'
 
-const userContent = path.join(__dirname, '../..', 'usercontent')
+// const userContent = path.join(__dirname, '../..', 'usercontent')
 
 let router = express.Router()
 
@@ -289,6 +289,11 @@ router.get('/news', wrap(async (req, res) => {
   res.jsonp(articles)
 }))
 
+/* ==========
+ *   AVATAR
+ * ==========
+ */
+// Promisify multiparty form parser
 async function promiseForm (req) {
   let form = new multiparty.Form()
   return new Promise(function (resolve, reject) {
@@ -299,6 +304,7 @@ async function promiseForm (req) {
   })
 }
 
+// Upload avatar image
 router.post('/avatar', uploadLimiter, wrap(async (req, res, next) => {
   if (!req.session.user) return next()
   let data = await promiseForm(req)
@@ -320,6 +326,7 @@ router.post('/avatar', uploadLimiter, wrap(async (req, res, next) => {
   res.status(200).jsonp({})
 }))
 
+// Remove avatar image
 router.post('/avatar/remove', wrap(async (req, res, next) => {
   if (!req.session.user) return next()
 
@@ -329,6 +336,7 @@ router.post('/avatar/remove', wrap(async (req, res, next) => {
   res.status(200).jsonp({done: true})
 }))
 
+// Get latest avatar of logged in user
 router.get('/avatar', wrap(async (req, res, next) => {
   if (!req.session.user) return next()
   let user = req.session.user
@@ -339,6 +347,7 @@ router.get('/avatar', wrap(async (req, res, next) => {
   res.redirect('/usercontent/images/' + user.avatar_file)
 }))
 
+// Get latest avatar of user by id
 router.get('/avatar/:id', wrap(async (req, res, next) => {
   let id = parseInt(req.params.id)
   if (isNaN(id)) return next()
@@ -351,9 +360,36 @@ router.get('/avatar/:id', wrap(async (req, res, next) => {
   res.redirect('/usercontent/images/' + user.avatar_file)
 }))
 
+// Redirect to no avatar on 404
 router.use('/avatar', (req, res) => {
   res.redirect('/static/image/avatar.png')
 })
+
+/* =====================
+ *   OAuth2 Management
+ * =====================
+ */
+
+router.get('/oauth2/authorized-clients', wrap(async (req, res, next) => {
+  if (!req.session.user) return next()
+
+  let list = await API.User.OAuth2.getUserAuthorizations(req.session.user)
+  if (!list) return next()
+
+  res.jsonp(list)
+}))
+
+router.post('/oauth2/authorized-clients/delete', wrap(async (req, res, next) => {
+  if (!req.session.user) return next()
+
+  let clientId = parseInt(req.body.client_id)
+  if (isNaN(clientId)) return res.status(400).jsonp({error: 'Missing Client ID parameter'})
+
+  let done = await API.User.OAuth2.removeUserAuthorization(req.session.user, clientId)
+  if (!done) return res.status(400).jsonp({error: 'Failed to remove client authorization'})
+
+  res.status(204).end()
+}))
 
 // 404
 router.use((req, res) => {

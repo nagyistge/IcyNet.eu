@@ -237,6 +237,7 @@ input:not([type="submit"])
         background-color: #fff
         box-shadow: 5px 5px 15px #868686
         border: 1px solid #ddd
+        margin-bottom: 10%
         h1:first-child, h2:first-child, h3:first-child
             margin-top: 0
         .left, .right
@@ -360,6 +361,11 @@ span.divider
 
 .application
     height: 140px
+    #deleteclient
+        float: right
+        color: red
+        font-size: 120%
+        cursor: pointer
     .picture
         width: 120px
         height: 120px
@@ -387,6 +393,7 @@ span.divider
             display: block
             text-overflow: ellipsis
             overflow: hidden
+            max-width: 200px
 
 input.authorize
     background-color: #00b0ff
@@ -421,12 +428,13 @@ input.invalid
         margin-top: 20px
         margin-bottom: 20px
 
+span.load
+    font-size: 120%
+    span
+        vertical-align: super
+        margin-left: 10px
+
 .newsfeed
-    .load
-        font-size: 120%
-        span
-            vertical-align: super
-            margin-left: 10px
     .prvarticle
         margin-bottom: 10px
         .title

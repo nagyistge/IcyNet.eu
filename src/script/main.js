@@ -36,6 +36,61 @@ $(document).ready(function () {
     return newWindow
   }
 
+  function removeAuthorization (clientId) {
+    $.ajax({
+      type: 'post',
+      url: '/api/oauth2/authorized-clients/delete',
+      data: { client_id: clientId },
+      success: function (data) {
+        loadAuthorizations()
+      }
+    })
+  }
+
+  function loadAuthorizations () {
+    $.get({
+      url: '/api/oauth2/authorized-clients',
+      dataType: 'json',
+      success: function (data) {
+        if (!data.length) {
+          return $('#clientlist').html('There is nothing to show at this moment.')
+        }
+        var html = ''
+        for (var i in data) {
+          var client = data[i]
+          html += '<div class="authclient application" data-client-id="' + client.id + '" id="client-' + client.id + '">'
+          html += '<div class="remove" id="deleteclient"><i class="fa fa-fw fa-ban"></i></div>'
+          html += '<div class="picture">'
+
+          if (client.icon) {
+            html += '<img src="' + client.icon + '">'
+          } else {
+            html += '<div class="noicon"><i class="fa fa-fw fa-gears"></i></div>'
+          }
+
+          html += '</div>'
+          html += '<div class="info">'
+          html += '<div class="name">' + client.title + '</div>'
+          html += '<div class="description">' + client.description + '</div>'
+          html += '<a class="url" href="' + client.url + '">' + client.url + '</a>'
+          html += '<div class="timestamp">Authorized ' + new Date(client.created_at) + '</div>'
+          html += '</div></div>'
+        }
+
+        $('#clientlist').html(html)
+
+        for (let i in data) {
+          $('#client-' + data[i].id + ' #deleteclient').click(function (e) {
+            let clid = $(this).parent().data('client-id')
+            if (clid != null) {
+              removeAuthorization(clid)
+            }
+          })
+        }
+      }
+    })
+  }
+
   window.Dialog = $('#dialog')
   window.Dialog.open = function (title, content, pad) {
     $('#dialog #title').text(title)
@@ -150,6 +205,10 @@ $(document).ready(function () {
         $('.newsfeed').html(html)
       }
     })
+  }
+
+  if ($('#clientlist').length) {
+    loadAuthorizations()
   }
 
   if ($('#newAvatar').length) {

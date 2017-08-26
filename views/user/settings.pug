@@ -1,4 +1,4 @@
-extends layout.pug
+extends ../layout.pug
 block title
 	|Icy Network - User Settings
 
@@ -23,7 +23,7 @@ block body
 						input(type="text", name="display_name", id="display_name", value=user.display_name)
 						label Avatar
 						.avatarCont
-							include includes/avatar.pug
+							include ../includes/avatar.pug
 							.options
 								a#newAvatar(href='#') Change Avatar
 								if user.avatar_file
@@ -31,7 +31,7 @@ block body
 						input(type="submit", value="Save Settings")
 				.right
 					h3 Social Media Accounts
-					include includes/external.pug
+					include ../includes/external.pug
 					if twitter_auth == false
 						a.option.accdisconnect(href="/api/external/twitter/remove")
 							i.fa.fa-fw.fa-times
@@ -60,3 +60,9 @@ block body
 					a.option(href="/user/manage/email")
 						i.fa.fa-fw.fa-envelope
 						|Change Email Address
+				.clients
+					h2 OAuth2 Authorized Clients
+					.cl#clientlist
+						span.load
+							i.fa.fa-spin.fa-spinner.fa-2x
+							span Loading list
