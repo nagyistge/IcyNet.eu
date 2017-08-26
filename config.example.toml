@@ -1,0 +1,77 @@
+# Server configuration
+[server]
+	# Port the server will run on
+	port=8282
+	# Session key
+	session_key="Session"
+	# Session secret
+	session_secret="hackmysessions"
+	# Number of worker processes (0 to use all CPU cores)
+	workers=1
+	# Domain of this application
+	domain="http://localhost:8282"
+
+# Database
+# Available database clients: mysql / postgresql(pg) / sqlite3 / oracle / mssql
+[database]
+	client="mysql"
+
+	# Here you will define database connection related to the client
+	[database.connection]
+		user="root"
+		host="localhost"
+		password=""
+		database="icynet"
+	# More information on database configuration can be found here:
+	# http://knexjs.org/#Installation-client
+
+# OAuth2 related configuration
+[oauth2]
+	# Byte length of a token
+	token_length=16
+	# 1 week of token life
+	access_token_life=604800
+	# Authorization code life
+	code_life=3600
+	# Whether or not an OAuth2 client authorization decision will be saved
+	# which means that the user will not be asked for authorization again
+	# Decisions can be revoked from the user settings page
+	save_decision=true
+
+# Redis is currently used for storing sessions
+[redis]
+	port=6379
+
+# Uncomment if you want to be using Twitter authentication
+[twitter]
+#	api=""
+#	api_secret=""
+
+# Uncomment if you want to be using Facebook authentication
+[facebook]
+#	client=""
+
+# Uncomment if you want to be using Discord authentication
+[discord]
+#	api=""
+#	api_secret=""
+
+# reCAPTCHA configuration
+[security]
+	[security.recaptcha]
+#		site_key=""
+#		secret_key=""
+
+# Email SMTP transport configuration
+[email]
+	enabled=false
+	admin="icynet@example.com"
+	[email.transport]
+		host="mail.example.com"
+		port=587
+		secure=false
+		[email.transport.auth]
+			user=""
+			pass=""
+		[email.transport.tls]
+			rejectUnauthorized=false

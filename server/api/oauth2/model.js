@@ -239,6 +239,7 @@ const OAuthDB = {
       return correct
     },
     allowClient: async (userId, clientId, scope) => {
+      if (!config.oauth2.save_decision) return true
       if (typeof scope === 'object') {
         scope = scope.join(' ')
       }

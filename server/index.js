@@ -13,6 +13,15 @@ const args = {
   port: config.server.port
 }
 
+function spawnWorkers () {
+  let workerCount = config.server.workers === 0 ? cpuCount : config.server.workers
+  console.log('Spinning up ' + workerCount + ' worker process' + (workerCount !== 1 ? 'es' : ''))
+
+  for (let i = 0; i < workerCount; i++) {
+    spawnWorker()
+  }
+}
+
 async function initialize () {
   try {
     const knex = require('knex')(require('../knexfile'))
@@ -24,12 +33,31 @@ async function initialize () {
     console.error('Database error:', err)
   }
 
-  let workerCount = config.server.workers === 0 ? cpuCount : config.server.workers
-  console.log('Spinning up ' + workerCount + ' worker process' + (workerCount !== 1 ? 'es' : ''))
-
-  for (let i = 0; i < workerCount; i++) {
-    spawnWorker()
+  spawnWorkers()
+  if (args.dev) {
+    watchFileTree()
   }
+}
+
+function watchFileTree () {
+  if (process.argv.indexOf('-w') === -1) return
+  console.log('[WatchTask] Starting watcher')
+
+  const watch = require('watch')
+  watch.watchTree(__dirname, (f, curr, prev) => {
+    if (typeof f === 'object' && prev === null && curr === null) {
+      console.log('[WatchTask] Watching %d files', Object.keys(f).length)
+      return
+    }
+
+    console.log('[WatchTask] %s changed, restarting workers', f)
+    if (workers.length) {
+      for (let i in workers) {
+        workers[i].send('stop')
+      }
+    }
+    spawnWorkers()
+  })
 }
 
 function spawnWorker (oldWorker) {
