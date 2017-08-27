@@ -43,6 +43,8 @@ router.use(wrap(async (req, res, next) => {
     messages = messages[0]
   }
 
+  res.locals.message = messages
+
   // Update user session every 30 minutes
   if (req.session.user) {
     if (!req.session.user.session_refresh) {
@@ -50,12 +52,20 @@ router.use(wrap(async (req, res, next) => {
     }
 
     if (req.session.user.session_refresh < Date.now()) {
+      // Check for ban
+      let banStatus = await API.User.getBanStatus(req.session.user.id)
+
+      if (banStatus.length) {
+        delete req.session.user
+        return next()
+      }
+
+      // Update user session
       let udata = await API.User.get(req.session.user.id)
       setSession(req, udata)
     }
   }
 
-  res.locals.message = messages
   next()
 }))
 
@@ -207,6 +217,11 @@ router.get('/user/manage/email', ensureLogin, wrap(async (req, res) => {
   res.render('user/email_change', {email: obfuscated, password: socialStatus.password})
 }))
 
+router.get('/donate', wrap(async (req, res, next) => {
+  if (!config.donations || !config.donations.business) return next()
+  res.render('donate', config.donations)
+}))
+
 /*
   =================
     POST HANDLING
@@ -339,14 +354,18 @@ router.post('/login', wrap(async (req, res, next) => {
   if (user.activated === 0) return formError(req, res, 'Please activate your account first.')
   if (user.locked === 1) return formError(req, res, 'This account has been locked.')
 
+  // Check if the user is banned
+  let banStatus = await API.User.getBanStatus(user.id)
+  if (banStatus.length) {
+    return res.render('user/banned', {bans: banStatus, ipban: false})
+  }
+
   // Redirect to the verification dialog if 2FA is enabled
   let totpRequired = await API.User.Login.totpTokenRequired(user)
   if (totpRequired) {
     req.session.totp_check = user.id
     return res.redirect('/login/verify')
   }
-
-  // TODO: Ban checks
 
   // Set session
   setSession(req, user)

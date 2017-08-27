@@ -1,6 +1,7 @@
 import path from 'path'
 import cprog from 'child_process'
 import config from '../../scripts/load-config'
+import http from '../../scripts/http'
 import models from './models'
 import crypto from 'crypto'
 import notp from 'notp'
@@ -47,6 +48,8 @@ function keysAvailable (object, required) {
 
   return found
 }
+
+let txnStore = []
 
 const API = {
   Hash: (len) => {
@@ -368,6 +371,92 @@ const API = {
 
         return true
       }
+    }
+  },
+  Payment: {
+    handleIPN: async function (body) {
+      let sandboxed = body.test_ipn === '1'
+      let url = 'https://ipnpb.' + (sandboxed ? 'sandbox.' : '') + 'paypal.com/cgi-bin/webscr'
+
+      console.debug('Incoming payment')
+      let verification = await http.POST(url, {}, Object.assign({
+        cmd: '_notify-validate'
+      }, body))
+
+      if (verification !== 'VERIFIED') return null
+
+      if (sandboxed) {
+        console.debug('Sandboxed payment:', body)
+      } else {
+        console.debug('IPN Verified Notification:', body)
+      }
+
+      // TODO: add database field for this
+      if (body.txn_id) {
+        if (txnStore.indexOf(body.txn_id) !== -1) return true
+        txnStore.push(body.txn_id)
+      }
+
+      let user
+      let source = []
+      if (sandboxed) {
+        source.push('virtual')
+      }
+
+      // TODO: add hooks
+      let custom = body.custom.split(',')
+      for (let i in custom) {
+        let str = custom[i]
+        if (str.indexOf('userid:') === 0) {
+          body.user_id = parseInt(str.split(':')[1])
+        } else if (str.indexOf('mcu:') === 0) {
+          source.push('mcu:' + str.split(':')[1])
+        }
+      }
+
+      if (body.user_id != null) {
+        user = await API.User.get(body.user_id)
+      } else if (body.payer_email != null) {
+        user = await API.User.get(body.payer_email)
+      }
+
+      let donation = {
+        user_id: user ? user.id : null,
+        amount: (body.mc_gross || body.payment_gross || 'Unknown') + ' ' + (body.mc_currency || 'EUR'),
+        source: source.join(';'),
+        note: body.memo || '',
+        read: 0,
+        created_at: new Date(body.payment_date)
+      }
+
+      console.log('Server receieved a successful PayPal IPN message.')
+
+      return models.Donation.query().insert(donation)
+    },
+    userContributions: async function (user) {
+      user = await API.User.ensureObject(user)
+
+      let dbq = await models.Donation.query().where('user_id', user.id)
+      let contribs = []
+
+      for (let i in dbq) {
+        let contrib = dbq[i]
+        let obj = {
+          amount: contrib.amount,
+          donated: contrib.created_at
+        }
+
+        let srcs = contrib.source.split(';')
+        for (let j in srcs) {
+          if (srcs[j].indexOf('mcu') === 0) {
+            obj.minecraft_username = srcs[j].split(':')[1]
+          }
+        }
+
+        contribs.push(obj)
+      }
+
+      return contribs
     }
   }
 }

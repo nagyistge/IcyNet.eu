@@ -212,6 +212,33 @@ $(document).ready(function () {
     loadAuthorizations()
   }
 
+  if ($('#mcinclude').length) {
+    var customDef = $('#custominfo').val()
+    $('#mcinclude').change(function () {
+      $('.mcuname').slideToggle()
+
+      if (!this.checked) {
+        $('#custominfo').val(customDef)
+      } else {
+        if ($('#mcusername').val()) {
+          var mcname = 'mcu:' + $('#mcusername').val()
+          $('#custominfo').val(customDef ? customDef + ',' + mcname : mcname)
+        }
+      }
+    })
+
+    $('#mcusername').on('keyup', function () {
+      var mcname = 'mcu:' + $(this).val()
+
+      if ($(this).val() === '') {
+        $('#custominfo').val(customDef)
+        return
+      }
+
+      $('#custominfo').val(customDef ? customDef + ',' + mcname : mcname)
+    })
+  }
+
   if ($('#newAvatar').length) {
     $('#newAvatar').click(function (e) {
       e.preventDefault()

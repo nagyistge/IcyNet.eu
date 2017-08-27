@@ -88,6 +88,10 @@ router.post('/external/facebook/callback', wrap(async (req, res, next) => {
 
   let response = await APIExtern.Facebook.callback(req.session.user, sane)
 
+  if (response.banned) {
+    return res.render('user/banned', {bans: response.banned, ipban: response.ip})
+  }
+
   if (response.error) {
     return JsonData(req, res, response.error)
   }
@@ -153,6 +157,10 @@ router.get('/external/twitter/callback', wrap(async (req, res) => {
   }
 
   let response = await APIExtern.Twitter.callback(req.session.user, accessTokens, req.realIP)
+  if (response.banned) {
+    return res.render('user/banned', {bans: response.banned, ipban: response.ip})
+  }
+
   if (response.error) {
     req.flash('message', {error: true, text: response.error})
     return res.redirect(uri)
@@ -223,6 +231,10 @@ router.get('/external/discord/callback', wrap(async (req, res) => {
   }
 
   let response = await APIExtern.Discord.callback(req.session.user, accessToken.accessToken, req.realIP)
+  if (response.banned) {
+    return res.render('user/banned', {bans: response.banned, ipban: response.ip})
+  }
+
   if (response.error) {
     req.flash('message', {error: true, text: response.error})
     return res.redirect(uri)
@@ -397,6 +409,28 @@ router.post('/oauth2/authorized-clients/revoke', wrap(async (req, res, next) => 
   if (!done) return res.status(400).jsonp({error: 'Failed to remove client authorization'})
 
   res.status(204).end()
+}))
+
+/* ==================
+ *   Donation Store
+ * ==================
+ */
+
+router.post('/paypal/ipn', wrap(async (req, res) => {
+  let content = req.body
+
+  if (content && content.payment_status && content.payment_status === 'Completed') {
+    await API.Payment.handleIPN(content)
+  }
+
+  res.status(204).end()
+}))
+
+router.get('/user/donations', wrap(async (req, res, next) => {
+  if (!req.session.user) return next()
+
+  let contribs = await API.Payment.userContributions(req.session.user)
+  res.jsonp(contribs)
 }))
 
 // 404
