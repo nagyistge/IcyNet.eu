@@ -8,11 +8,13 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "css": "mkdir -p build/style && stylus -o build/style src/style/*.styl",
     "css:watch": "mkdir -p build/style && stylus -w -o build/style src/style/*.styl",
-    "js": "mkdir -p build/script && browserify src/script/main.js -o build/script/main.js && uglifyjs --overwrite build/script/main.js",
-    "js:watch": "mkdir -p build/script && watchify src/script/main.js -o build/script/main.js",
-    "watch": "concurrently --kill-others \"npm run css:watch\" \"npm run js:watch\"",
+    "js:main": "mkdir -p build/script && browserify src/script/main.js -o build/script/main.js && uglifyjs --overwrite build/script/main.js",
+    "js:main:watch": "mkdir -p build/script && watchify src/script/main.js -o build/script/main.js",
+    "js:admin": "mkdir -p build/script && browserify src/script/admin.js -o build/script/admin.js && uglifyjs --overwrite build/script/admin.js",
+    "js:admin:watch": "mkdir -p build/script && watchify src/script/admin.js -o build/script/admin.js",
+    "watch": "concurrently --kill-others \"npm run css:watch\" \"npm run js:main:watch\" \"npm run js:admin:watch\"",
     "clean": "rm -rf build/",
-    "build": "npm run clean && npm run css && npm run js"
+    "build": "npm run clean && npm run css && npm run js:main && npm run js:admin"
   },
   "repository": {
     "type": "git",

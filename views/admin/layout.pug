@@ -1,0 +1,27 @@
+html
+	head
+		meta(charset="utf8")
+		link(rel="stylesheet", type="text/css", href="/style/admin.css")
+		script.
+			window.variables = {
+				server_time: parseInt('#{server_time}')
+			};
+		script(src="/script/admin.js")
+		title
+			block title
+				|Icy Network - Administration
+	body
+		block navigation
+			nav
+				ul
+					li
+						a.logo(href="/") Icy Network
+					li
+						a(href="/admin/") Home
+					li
+						a(href="/admin/oauth2/") OAuth2
+				ul.right
+					li
+						a(href="/user/manage") #{user.display_name}
+		.wrapper
+			block body

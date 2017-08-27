@@ -11,6 +11,7 @@ import emailer from '../api/emailer'
 
 import apiRouter from './api'
 import oauthRouter from './oauth2'
+import adminRouter from './admin'
 
 let router = express.Router()
 
@@ -703,6 +704,7 @@ router.get('/activate/:token', wrap(async (req, res) => {
 }))
 
 router.use('/api', apiRouter)
+router.use('/admin', adminRouter)
 
 /*
   NO ROUTES BEYOND THIS POINT
