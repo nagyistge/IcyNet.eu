@@ -31,17 +31,21 @@ app.use(session({
 }))
 
 app.use((req, res, next) => {
+  // Inject a cleaner version of the user's IP Address into the request
   let ipAddr = req.headers['x-forwarded-for'] || req.connection.remoteAddress
 
   if (ipAddr.indexOf('::ffff:') !== -1) {
     ipAddr = ipAddr.replace('::ffff:', '')
   }
 
+  req.realIP = ipAddr
+
+  // Make sure CSRF token is present in the session
   if (!req.session.csrf) {
     req.session.csrf = crypto.randomBytes(12).toString('hex')
   }
 
-  req.realIP = ipAddr
+  // Add user and csrf token into rendering information
   res.locals = Object.assign(res.locals, {
     user: req.session.user || null,
     csrf: req.session.csrf
@@ -56,8 +60,10 @@ module.exports = (args) => {
   app.set('views', path.join(__dirname, '../views'))
 
   if (args.dev) console.log('Worker is in development mode')
-  let staticAge = args.dev ? 1000 : 7 * 24 * 60 * 60 * 1000
+  let staticAge = args.dev ? 1000 : 7 * 24 * 60 * 60 * 1000 // 1 week of cache in production
 
+  // Static content directories, cache these requests.
+  // It is also a good idea to use nginx to serve these directories in order to save on computing power
   app.use('/style', express.static(path.join(__dirname, '../build/style'), { maxAge: staticAge }))
   app.use('/script', express.static(path.join(__dirname, '../build/script'), { maxAge: staticAge }))
   app.use('/static', express.static(path.join(__dirname, '../static'), { maxAge: staticAge }))
@@ -67,6 +73,8 @@ module.exports = (args) => {
 
   app.listen(args.port, () => {
     console.log('Listening on 0.0.0.0:' + args.port)
+
+    // Initialize the email transporter (if configured)
     email.init()
   })
 }

@@ -2,7 +2,6 @@ import fs from 'fs'
 import path from 'path'
 import express from 'express'
 import RateLimit from 'express-rate-limit'
-import parseurl from 'parseurl'
 import config from '../../scripts/load-config'
 import wrap from '../../scripts/asyncRoute'
 import http from '../../scripts/http'
@@ -15,6 +14,7 @@ import oauthRouter from './oauth2'
 
 let router = express.Router()
 
+// Restrict account creation
 let accountLimiter = new RateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 10,
@@ -22,6 +22,7 @@ let accountLimiter = new RateLimit({
   message: 'Whoa, slow down there, buddy! You just hit our rate limits. Try again in 1 hour.'
 })
 
+// Set the user session
 function setSession (req, user) {
   req.session.user = {
     id: user.id,
@@ -34,6 +35,7 @@ function setSession (req, user) {
 }
 
 router.use(wrap(async (req, res, next) => {
+  // Add form messages into the template rendering if present
   let messages = req.flash('message')
   if (!messages || !messages.length) {
     messages = {}
@@ -85,6 +87,8 @@ function extraButtons (req, res, next) {
   next()
 }
 
+// Make sure the user is logged in
+// Redirect to login page and store the current path in the session for redirecting later
 function ensureLogin (req, res, next) {
   if (req.session.user) return next()
   req.session.redirectUri = req.originalUrl
@@ -124,6 +128,7 @@ router.get('/register', extraButtons, (req, res) => {
   res.render('user/register')
 })
 
+// View for enabling Two-Factor Authentication
 router.get('/user/two-factor', ensureLogin, wrap(async (req, res) => {
   let twoFaEnabled = await API.User.Login.totpTokenRequired(req.session.user)
   if (twoFaEnabled) return res.redirect('/')
@@ -134,6 +139,7 @@ router.get('/user/two-factor', ensureLogin, wrap(async (req, res) => {
   res.render('user/totp', { uri: newToken })
 }))
 
+// View for disabling Two-Factor Authentication
 router.get('/user/two-factor/disable', ensureLogin, wrap(async (req, res) => {
   let twoFaEnabled = await API.User.Login.totpTokenRequired(req.session.user)
 
@@ -141,10 +147,12 @@ router.get('/user/two-factor/disable', ensureLogin, wrap(async (req, res) => {
   res.render('user/password')
 }))
 
+// Two-Factor Authentication verification on login
 router.get('/login/verify', (req, res) => {
   res.render('user/totp-check')
 })
 
+// User settings page
 router.get('/user/manage', ensureLogin, wrap(async (req, res) => {
   let totpEnabled = false
   let socialStatus = await API.User.socialStatus(req.session.user)
@@ -180,10 +188,12 @@ router.get('/user/manage', ensureLogin, wrap(async (req, res) => {
   res.render('user/settings', {totp: totpEnabled, password: socialStatus.password})
 }))
 
+// Change password
 router.get('/user/manage/password', ensureLogin, wrap(async (req, res) => {
   res.render('user/password_new')
 }))
 
+// Change email
 router.get('/user/manage/email', ensureLogin, wrap(async (req, res) => {
   let obfuscated = req.session.user.email
   if (obfuscated) {
@@ -203,6 +213,7 @@ router.get('/user/manage/email', ensureLogin, wrap(async (req, res) => {
   =================
 */
 
+// Used to display errors on forms and save data
 function formError (req, res, error, redirect) {
   // Security measures: never store any passwords in any session
   for (let key in req.body) {
@@ -213,9 +224,10 @@ function formError (req, res, error, redirect) {
 
   req.flash('formkeep', req.body || {})
   req.flash('message', {error: true, text: error})
-  res.redirect(redirect || parseurl(req).path)
+  res.redirect(redirect || req.originalUrl)
 }
 
+// Make sure characters are UTF-8
 function cleanString (input) {
   let output = ''
   for (let i = 0; i < input.length; i++) {
@@ -224,6 +236,7 @@ function cleanString (input) {
   return output
 }
 
+// Enabling 2fa
 router.post('/user/two-factor', wrap(async (req, res, next) => {
   if (!req.session.user) return next()
   if (!req.body.code) {
@@ -236,12 +249,13 @@ router.post('/user/two-factor', wrap(async (req, res, next) => {
 
   let verified = await API.User.Login.totpCheck(req.session.user, req.body.code)
   if (!verified) {
-    return formError(req, res, 'Try again!')
+    return formError(req, res, 'Something went wrong! Try scanning the code again.')
   }
 
   res.redirect('/')
 }))
 
+// Disabling 2fa
 router.post('/user/two-factor/disable', wrap(async (req, res, next) => {
   if (!req.session.user) return next()
   if (req.body.csrf !== req.session.csrf) {
@@ -260,6 +274,7 @@ router.post('/user/two-factor/disable', wrap(async (req, res, next) => {
   res.redirect('/')
 }))
 
+// Verify 2FA for login
 router.post('/login/verify', wrap(async (req, res, next) => {
   if (req.session.user) return next()
   if (req.session.totp_check === null) return res.redirect('/login')
@@ -302,6 +317,7 @@ router.post('/login/verify', wrap(async (req, res, next) => {
   res.redirect(uri)
 }))
 
+// Log the user in
 router.post('/login', wrap(async (req, res, next) => {
   if (req.session.user) return next()
   if (!req.body.username || !req.body.password || req.body.username === '') {
@@ -323,6 +339,7 @@ router.post('/login', wrap(async (req, res, next) => {
   if (user.activated === 0) return formError(req, res, 'Please activate your account first.')
   if (user.locked === 1) return formError(req, res, 'This account has been locked.')
 
+  // Redirect to the verification dialog if 2FA is enabled
   let totpRequired = await API.User.Login.totpTokenRequired(user)
   if (totpRequired) {
     req.session.totp_check = user.id
@@ -347,6 +364,7 @@ router.post('/login', wrap(async (req, res, next) => {
   res.redirect(uri)
 }))
 
+// Protected & Limited resource: Account registration
 router.post('/register', accountLimiter, wrap(async (req, res, next) => {
   if (req.session.user) return next()
   if (!req.body.username || !req.body.display_name || !req.body.password || !req.body.email) {
@@ -423,10 +441,17 @@ router.post('/register', accountLimiter, wrap(async (req, res, next) => {
     return formError(req, res, newUser.error)
   }
 
-  req.flash('message', {error: false, text: 'Account created successfully! Please check your email for an activation link.'})
+  // Do not include activation link message when the user is already activated
+  let registerMessage = 'Account created successfully!'
+  if (newUser.user && newUser.user.activated !== 1) {
+    registerMessage += ' Please check your email for an activation link.'
+  }
+
+  req.flash('message', {error: false, text: registerMessage})
   res.redirect('/login')
 }))
 
+// Change display name
 router.post('/user/manage', wrap(async (req, res, next) => {
   if (!req.session.user) return next()
 
@@ -460,10 +485,11 @@ router.post('/user/manage', wrap(async (req, res, next) => {
 
   req.session.user.display_name = displayName
 
-  req.flash('message', {error: false, text: 'Settings changed successfully. Please note that it may take time to update on other websites and devices.'})
+  req.flash('message', {error: false, text: 'Settings changed successfully.'})
   res.redirect('/user/manage')
 }))
 
+// Change user password
 router.post('/user/manage/password', wrap(async (req, res, next) => {
   if (!req.session.user) return next()
 
@@ -514,6 +540,7 @@ router.post('/user/manage/password', wrap(async (req, res, next) => {
   return res.redirect('/user/manage')
 }))
 
+// Change email address
 router.post('/user/manage/email', wrap(async (req, res, next) => {
   if (!req.session.user) return next()
 
@@ -578,6 +605,7 @@ router.post('/user/manage/email', wrap(async (req, res, next) => {
   =============
 */
 
+// Serve a document form the documents directory, cache it.
 const docsDir = path.join(__dirname, '../../documents')
 router.get('/docs/:name', (req, res, next) => {
   let doc = path.join(docsDir, req.params.name + '.html')
@@ -591,9 +619,11 @@ router.get('/docs/:name', (req, res, next) => {
     return next(e)
   }
 
+  res.header('Cache-Control', 'max-age=' + 7 * 24 * 60 * 60 * 1000) // 1 week
   res.render('document', {doc: doc})
 })
 
+// Serve news
 router.get('/news/:id?-*', wrap(async (req, res) => {
   let id = parseInt(req.params.id)
   if (isNaN(id)) {
@@ -605,6 +635,7 @@ router.get('/news/:id?-*', wrap(async (req, res) => {
     return res.status(404).render('article', {article: null})
   }
 
+  res.header('Cache-Control', 'max-age=' + 24 * 60 * 60 * 1000) // 1 day
   res.render('article', {article: article})
 }))
 
@@ -619,6 +650,7 @@ router.get('/news/', wrap(async (req, res) => {
   res.render('news', {news: news})
 }))
 
+// Render partials
 router.get('/partials/:view', wrap(async (req, res, next) => {
   if (!req.params.view) return next()
 
@@ -639,6 +671,7 @@ router.get('/logout', wrap(async (req, res) => {
   res.redirect('/')
 }))
 
+// User activation endpoint (emailed link)
 router.get('/activate/:token', wrap(async (req, res) => {
   if (req.session.user) return res.redirect('/login')
   let token = req.params.token

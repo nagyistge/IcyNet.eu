@@ -4,11 +4,12 @@
 	port=8282
 	# Session key
 	session_key="Session"
-	# Session secret
+	# Session secret (keep this a secret)
 	session_secret="hackmysessions"
 	# Number of worker processes (0 to use all CPU cores)
 	workers=1
 	# Domain of this application
+	# Used for the links in emails
 	domain="http://localhost:8282"
 
 # Database

@@ -39,7 +39,7 @@ $(document).ready(function () {
   function removeAuthorization (clientId) {
     $.ajax({
       type: 'post',
-      url: '/api/oauth2/authorized-clients/delete',
+      url: '/api/oauth2/authorized-clients/revoke',
       data: { client_id: clientId },
       success: function (data) {
         loadAuthorizations()

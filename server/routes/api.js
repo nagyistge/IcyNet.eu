@@ -1,6 +1,5 @@
 import express from 'express'
 import RateLimit from 'express-rate-limit'
-import path from 'path'
 import multiparty from 'multiparty'
 import config from '../../scripts/load-config'
 import wrap from '../../scripts/asyncRoute'
@@ -9,16 +8,17 @@ import News from '../api/news'
 import Image from '../api/image'
 import APIExtern from '../api/external'
 
-// const userContent = path.join(__dirname, '../..', 'usercontent')
-
 let router = express.Router()
+let dev = process.env.NODE_ENV !== 'production'
 
+// Restrict API usage
 let apiLimiter = new RateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes
   max: 100,
   delayMs: 0
 })
 
+// Restrict image uploads
 let uploadLimiter = new RateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 10,
@@ -81,7 +81,8 @@ function JsonData (req, res, error, redirect = '/') {
  * Ajax POST only <in-page javascript handeled>
  * No tokens saved in configs, everything works out-of-the-box
  */
-router.post('/external/facebook/callback', wrap(async (req, res) => {
+router.post('/external/facebook/callback', wrap(async (req, res, next) => {
+  if (!config.facebook || !config.facebook.client) return next()
   let sane = objectAssembler(req.body)
   sane.ip_address = req.realIP
 
@@ -252,14 +253,19 @@ router.get('/external/discord/remove', wrap(async (req, res) => {
  * ========
  */
 
-// Get page of articles
+// Cache news for one day
+router.get('/news', (req, res, next) => {
+  if (!dev) res.header('Cache-Control', 'max-age=' + 24 * 60 * 60 * 1000) // 1 day
+  next()
+})
+
+// Get a page of articles
 router.get('/news/all/:page', wrap(async (req, res) => {
   if (!req.params.page || isNaN(parseInt(req.params.page))) {
     return res.status(400).jsonp({error: 'Invalid page number.'})
   }
 
   let page = parseInt(req.params.page)
-
   let articles = await News.listNews(page)
 
   res.jsonp(articles)
@@ -277,8 +283,8 @@ router.get('/news/:id', wrap(async (req, res) => {
   }
 
   let id = parseInt(req.params.id)
-
   let article = await News.article(id)
+
   res.jsonp(article)
 }))
 
@@ -370,6 +376,7 @@ router.use('/avatar', (req, res) => {
  * =====================
  */
 
+// List authorizations
 router.get('/oauth2/authorized-clients', wrap(async (req, res, next) => {
   if (!req.session.user) return next()
 
@@ -379,7 +386,8 @@ router.get('/oauth2/authorized-clients', wrap(async (req, res, next) => {
   res.jsonp(list)
 }))
 
-router.post('/oauth2/authorized-clients/delete', wrap(async (req, res, next) => {
+// Revoke an authorization
+router.post('/oauth2/authorized-clients/revoke', wrap(async (req, res, next) => {
   if (!req.session.user) return next()
 
   let clientId = parseInt(req.body.client_id)

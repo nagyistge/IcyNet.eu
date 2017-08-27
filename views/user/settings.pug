@@ -31,6 +31,7 @@ block body
 						input(type="submit", value="Save Settings")
 				.right
 					h3 Social Media Accounts
+						.specify(title="You can add social media accounts to your account for ease of login. Once added, logging in from linked sources logs you into this account automatically.") ?
 					include ../includes/external.pug
 					if twitter_auth == false
 						a.option.accdisconnect(href="/api/external/twitter/remove")
@@ -61,7 +62,8 @@ block body
 						i.fa.fa-fw.fa-envelope
 						|Change Email Address
 				.clients
-					h2 OAuth2 Authorized Applications
+					h2 Authorized Applications
+						.specify(title="Applications which have access to basic user information. You may restrict access at any time by pressing the red icon on the top right of the application card.") ?
 					.cl#clientlist
 						span.load
 							i.fa.fa-spin.fa-spinner.fa-2x

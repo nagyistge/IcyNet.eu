@@ -11,7 +11,7 @@ router.use(oauth.express())
 
 let oauthLimiter = new RateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes
-  max: 100,
+  max: 10,
   delayMs: 0
 })
 
@@ -23,10 +23,12 @@ function ensureLoggedIn (req, res, next) {
   res.redirect('/login')
 }
 
+// Generic OAuth2 endpoints
 router.use('/authorize', ensureLoggedIn, oauth.controller.authorization)
 router.post('/token', oauth.controller.token)
 router.post('/introspect', oauth.controller.introspection)
 
+// Protected user information resource
 router.get('/user', oauth.bearer, wrap(async (req, res) => {
   let accessToken = req.oauth2.accessToken
   let user = await uapi.User.get(accessToken.user_id)
