@@ -7,9 +7,14 @@ module.exports = async (oauth2, client, providedCode, redirectUri) => {
 
   let code = null
 
+  if (!providedCode) {
+    throw new error.InvalidRequest('code is mandatory for authorization_code grant type')
+  }
+
   try {
     code = await oauth2.model.code.fetchByCode(providedCode)
   } catch (err) {
+    console.error(err)
     throw new error.ServerError('Failed to call code.fetchByCode function')
   }
 
