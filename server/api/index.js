@@ -385,6 +385,11 @@ const API = {
 
       if (verification !== 'VERIFIED') return null
 
+      // Ignore the adding of non-on-site donations
+      if (body.item_name && config.donations.name && body.item_name !== config.donations.name) {
+        return true
+      }
+
       if (sandboxed) {
         console.debug('Sandboxed payment:', body)
       } else {
