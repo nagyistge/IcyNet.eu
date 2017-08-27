@@ -208,6 +208,13 @@ const OAuthDB = {
     checkPassword: Users.User.Login.password,
     fetchFromRequest: async (req) => {
       if (!req.session.user) return null
+      let banStatus = await Users.User.getBanStatus(req.session.user.id)
+
+      if (banStatus.length) {
+        delete req.session.user
+        return null
+      }
+
       return req.session.user
     },
     clientAllowed: async (userId, clientId, scope) => {

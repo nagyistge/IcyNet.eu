@@ -28,6 +28,10 @@ const API = {
 
       return extr
     },
+    getBan: async (user, ipAddress) => {
+      let banList = await UAPI.User.getBanStatus(ipAddress || user.id, ipAddress != null)
+      return banList
+    },
     new: async (service, identifier, user) => {
       let data = {
         user_id: user.id,
@@ -104,6 +108,10 @@ const API = {
       let exists = await API.Common.getExternal('fb', uid)
 
       if (user) {
+        // Get bans for user
+        let bans = await API.Common.getBan(user)
+        if (bans.length) return { banned: bans, ip: false }
+
         if (exists) return {error: null, user: user}
 
         await API.Common.new('fb', uid, user)
@@ -112,8 +120,15 @@ const API = {
 
       // Callback succeeded with user id and the external table exists, we log in the user
       if (exists) {
+        // Get bans for user
+        let bans = await API.Common.getBan(exists.user)
+        if (bans.length) return { banned: bans, ip: false }
         return {error: null, user: exists.user}
       }
+
+      // Get bans for IP address
+      let bans = await API.Common.getBan(null, data.ip_address)
+      if (bans.length) return { banned: bans, ip: true }
 
       // Determine profile picture
       let profilepic = null
@@ -221,6 +236,10 @@ const API = {
       let exists = await API.Common.getExternal('twitter', uid)
 
       if (user) {
+        // Get bans for user
+        let bans = await API.Common.getBan(user)
+        if (bans.length) return { banned: bans, ip: false }
+
         if (exists) return {error: null, user: user}
 
         await API.Common.new('twitter', uid, user)
@@ -229,8 +248,15 @@ const API = {
 
       // Callback succeeded with user id and the external table exists, we log in the user
       if (exists) {
+        // Get bans for user
+        let bans = await API.Common.getBan(exists.user)
+        if (bans.length) return { banned: bans, ip: false }
         return {error: null, user: exists.user}
       }
+
+      // Get bans for IP
+      let bans = await API.Common.getBan(null, ipAddress)
+      if (bans.length) return { banned: bans, ip: true }
 
       // Determine profile picture
       let profilepic = null
@@ -338,6 +364,10 @@ const API = {
       let exists = await API.Common.getExternal('discord', uid)
 
       if (user) {
+        // Get bans for user
+        let bans = await API.Common.getBan(user)
+        if (bans.length) return { banned: bans, ip: false }
+
         if (exists) return {error: null, user: user}
 
         await API.Common.new('discord', uid, user)
@@ -346,8 +376,15 @@ const API = {
 
       // Callback succeeded with user id and the external table exists, we log in the user
       if (exists) {
+        // Get bans for user
+        let bans = await API.Common.getBan(exists.user)
+        if (bans.length) return { banned: bans, ip: false }
         return {error: null, user: exists.user}
       }
+
+      // Get bans for IP
+      let bans = await API.Common.getBan(null, ipAddress)
+      if (bans.length) return { banned: bans, ip: true }
 
       // Determine profile picture
       let profilepic = null

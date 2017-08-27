@@ -1,0 +1,28 @@
+extends ../layout.pug
+block title
+	|Icy Network - Banned Account
+
+block body
+	.wrapper
+		.boxcont
+			.box#login
+				if ipban
+					h1 This IP Address is BANNED!
+				else
+					h1 This User is BANNED!
+				p This user currently has #{bans.length} ban(s) active
+				each ban in bans
+					.message.error.ban
+						label Banned
+						.date #{new Date(ban.banned)}
+						label Reason
+						.reason #{ban.reason}
+						label Expires at
+						.expiry
+							if !ban.expiry
+								b This ban is permanent.
+							else
+								|#{new Date(ban.expiry)}
+						if !ban.expiry
+							b This ban cannot be appealed.
+

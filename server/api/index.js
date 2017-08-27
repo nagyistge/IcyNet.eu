@@ -152,6 +152,33 @@ const API = {
 
       return API.User.update(user, {avatar_file: null})
     },
+    getBanStatus: async function (field, ip = false) {
+      let bans
+      if (ip === true) {
+        bans = await models.Ban.query().where('associated_ip', field)
+      } else {
+        bans = await models.Ban.query().where('user_id', field)
+      }
+
+      let bansActive = []
+
+      for (let i in bans) {
+        let ban = bans[i]
+
+        // Check expiry
+        if (ban.expires_at && new Date(ban.expires_at).getTime() < Date.now()) continue
+
+        let banInfo = {
+          banned: ban.created_at,
+          reason: ban.reason,
+          expiry: ban.expires_at
+        }
+
+        bansActive.push(banInfo)
+      }
+
+      return bansActive
+    },
     Login: {
       password: async function (user, password) {
         user = await API.User.ensureObject(user, ['password'])
