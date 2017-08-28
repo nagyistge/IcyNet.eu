@@ -8,6 +8,10 @@ block body
 				.users
 					h3 Registered Users
 					#userlist
+			.right
+				.users
+					h3 Bans
+					#banlist
 	.templates
 		script(type="x-tmpl-mustache" id="user").
 			<div class="user" id="user-{{id}}">
@@ -22,7 +26,7 @@ block body
 			<div class="info">
 				<div class="stamps">
 					{{^activated}}
-					<div class="noactive"><i class="fa fa-fw fa-envelope"></i></div>
+					<div class="noactive" title="Not activated"><i class="fa fa-fw fa-envelope"></i></div>
 					{{/activated}}
 				</div>
 				<div class="display_name">{{display_name}}</div>
@@ -33,5 +37,33 @@ block body
 				{{^password}}
 				<div class="external"><b>Used external login</b></div>
 				{{/password}}
+				{{#bannable}}
+				<div class="button ban" data-id="{{id}}"><i class="fa fa-fw fa-ban"></i>Ban User</div>
+				{{/bannable}}
 			</div>
 			</div>
+		script(type="x-tmpl-mustache" id="ban").
+			<div class="ban" id="ban-{{user.id}}">
+				<div class="stamps">
+					{{#expired}}
+					<div class="noactive" title="Expired"><i class="fa fa-fw fa-ban"></i></div>
+					{{/expired}}
+				</div>
+				<div class="display_name">User: {{user.display_name}}</div>
+				<div class="display_name">Admin: {{admin.display_name}}</div>
+				<div class="description">Reason: {{reason}}</div>
+				<div class="timestamp">Placed {{created_at}}</div>
+				<div class="timestamp">Expires {{expires_at}}</div>
+				<div class="button remove" data-id="{{id}}">Pardon</div>
+			</div>
+		script(type="x-tmpl-mustache" id="banNew").
+			<form id="fnsubmit">
+				<div class="message error"></div>
+				<input type="hidden" name="csrf" value="#{csrf}">
+				<input type="hidden" name="user_id" value="{{id}}">
+				<label for="reason">Reason</label>
+				<input type="text" id="reason" name="reason">
+				<label for="expires_at">Expires</label>
+				<input type="date" id="expires_at" name="expires_at">
+				<input type="submit" value="Create">
+			</form>

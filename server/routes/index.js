@@ -53,7 +53,9 @@ router.use(wrap(async (req, res, next) => {
     }
 
     if (req.session.user.session_refresh < Date.now()) {
-      // Check for ban
+      console.debug('User session update')
+
+      // Check for bans
       let banStatus = await API.User.getBanStatus(req.session.user.id)
 
       if (banStatus.length) {
@@ -63,6 +65,9 @@ router.use(wrap(async (req, res, next) => {
 
       // Update user session
       let udata = await API.User.get(req.session.user.id)
+
+      // Update IP address
+      await API.User.update(udata, {ip_address: req.realIP})
       setSession(req, udata)
     }
   }

@@ -25,6 +25,67 @@ function paginationButton (pages) {
   return html
 }
 
+function banUser (id) {
+  window.Dialog.openTemplate('Ban User', 'banNew', {id: id})
+  $('#fnsubmit').submit(function (e) {
+    e.preventDefault()
+    $.post({
+      url: '/admin/api/ban',
+      data: $(this).serialize(),
+      success: function (data) {
+        window.Dialog.close()
+        loadBans(1)
+      },
+      error: function (e) {
+        if (e.responseJSON && e.responseJSON.error) {
+          $('form .message').show()
+          $('form .message').text(e.responseJSON.error)
+        }
+      }
+    })
+  })
+}
+
+function loadBans (page) {
+  $.ajax({
+    type: 'get',
+    url: '/admin/api/bans',
+    data: {page: page},
+    success: function (data) {
+      $('#banlist').html('')
+      if (data.error) {
+        $('#banlist').html('<div class="message">' + data.error + '</div>')
+        return
+      }
+
+      var pgbtn = paginationButton(data.page)
+      $('#banlist').append(pgbtn)
+      $('#banlist .pgn .button').click(function (e) {
+        var pgnum = $(this).data('page')
+        if (pgnum == null) return
+        loadBans(parseInt(pgnum))
+      })
+
+      for (var u in data.bans) {
+        var ban = data.bans[u]
+        ban.created_at = new Date(ban.created_at)
+        ban.expires_at = ban.expires_at === null ? 'Never' : new Date(ban.expires_at)
+        var tmp = buildTemplateScript('ban', ban)
+        $('#banlist').append(tmp)
+      }
+
+      $('#banlist .remove').click(function (e) {
+        $.post({
+          url: '/admin/api/ban/pardon/' + parseInt($(this).data('id')),
+          success: function (data) {
+            loadBans(1)
+          }
+        })
+      })
+    }
+  })
+}
+
 function loadUsers (page) {
   $.ajax({
     type: 'get',
@@ -39,7 +100,7 @@ function loadUsers (page) {
 
       var pgbtn = paginationButton(data.page)
       $('#userlist').append(pgbtn)
-      $('.pgn .button').click(function (e) {
+      $('#userlist .pgn .button').click(function (e) {
         var pgnum = $(this).data('page')
         if (pgnum == null) return
         loadUsers(parseInt(pgnum))
@@ -51,6 +112,10 @@ function loadUsers (page) {
         var tmp = buildTemplateScript('user', user)
         $('#userlist').append(tmp)
       }
+
+      $('#userlist .ban').click(function (e) {
+        banUser(parseInt($(this).data('id')))
+      })
     }
   })
 }
@@ -110,7 +175,7 @@ function loadClients (page) {
 
       var pgbtn = paginationButton(data.page)
       $('#clientlist').append(pgbtn)
-      $('.pgn .button').click(function (e) {
+      $('#clientlist .pgn .button').click(function (e) {
         var pgnum = $(this).data('page')
         if (pgnum == null) return
         loadClients(parseInt(pgnum))
@@ -123,17 +188,17 @@ function loadClients (page) {
         $('#clientlist').append(tmp)
       }
 
-      $('.edit').click(function (e) {
+      $('#clientlist .edit').click(function (e) {
         var client = $(this).data('client')
         editClient(parseInt(client))
       })
 
-      $('.delete').click(function (e) {
+      $('#clientlist .delete').click(function (e) {
         var client = $(this).data('client')
         deleteClient(parseInt(client))
       })
 
-      $('.newsecret').click(function (e) {
+      $('#clientlist .newsecret').click(function (e) {
         var client = $(this).data('client')
         $.post({
           url: '/admin/api/client/new_secret/' + parseInt(client),
@@ -173,6 +238,10 @@ $(document).ready(function () {
 
   if ($('#userlist').length) {
     loadUsers(1)
+  }
+
+  if ($('#banlist').length) {
+    loadBans(1)
   }
 
   if ($('#clientlist').length) {

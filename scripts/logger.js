@@ -26,8 +26,8 @@ console.warn = function () {
 
 const realConsoleError = console.error
 console.error = function () {
-  process.stdout.write('\x1b[2K\r')
-  process.stdout.write('[ err] [' + dateFormat(new Date()) + '] ')
+  process.stderr.write('\x1b[2K\r')
+  process.stderr.write('[ err] [' + dateFormat(new Date()) + '] ')
   realConsoleError.apply(this, arguments)
 }
 

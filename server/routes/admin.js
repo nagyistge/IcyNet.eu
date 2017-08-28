@@ -49,7 +49,7 @@ router.post('/', wrap(async (req, res, next) => {
 
   let passReady = await User.Login.password(req.session.user, req.body.password)
   if (passReady) {
-    req.session.accesstime = Date.now() + 300000 // 5 minutes
+    req.session.accesstime = Date.now() + 600000 // 10 minutes
     return res.redirect('/admin')
   } else {
     req.flash('message', {error: true, text: 'Invalid password'})
@@ -62,7 +62,7 @@ router.post('/', wrap(async (req, res, next) => {
 router.use(wrap(async (req, res, next) => {
   if (req.session.accesstime) {
     if (req.session.accesstime > Date.now()) {
-      req.session.accesstime = Date.now() + 300000
+      req.session.accesstime = Date.now() + 600000
       return next()
     }
 
@@ -96,10 +96,14 @@ apiRouter.get('/users', wrap(async (req, res) => {
     page = 1
   }
 
-  let users = await API.getAllUsers(page)
+  let users = await API.getAllUsers(page, req.session.user.id)
   res.jsonp(users)
 }))
 
+/* ===============
+ *   OAuth2 Data
+ * ===============
+ */
 apiRouter.get('/clients', wrap(async (req, res) => {
   let page = parseInt(req.query.page)
   if (isNaN(page) || page < 1) {
@@ -175,6 +179,49 @@ apiRouter.post('/client/delete/:id', wrap(async (req, res) => {
   }
 
   res.jsonp(client)
+}))
+
+/* ========
+ *   Bans
+ * ========
+ */
+
+apiRouter.get('/bans', wrap(async (req, res) => {
+  let page = parseInt(req.query.page)
+  if (isNaN(page) || page < 1) {
+    page = 1
+  }
+
+  let bans = await API.getAllBans(page)
+  res.jsonp(bans)
+}))
+
+apiRouter.post('/ban/pardon/:id', wrap(async (req, res) => {
+  let id = parseInt(req.params.id)
+  if (isNaN(id)) {
+    return res.status(400).jsonp({error: 'Invalid number'})
+  }
+
+  let ban = await API.removeBan(id)
+  if (ban.error) {
+    return res.status(400).jsonp({error: ban.error})
+  }
+
+  res.jsonp(ban)
+}))
+
+apiRouter.post('/ban', wrap(async (req, res) => {
+  if (!req.body.user_id) return res.status(400).jsonp({error: 'ID missing'})
+  if (req.body.csrf !== req.session.csrf) {
+    return res.status(400).jsonp({error: 'Invalid session'})
+  }
+
+  let result = await API.addBan(req.body, req.session.user.id)
+  if (result.error) {
+    return res.status(400).jsonp({error: result.error})
+  }
+
+  res.jsonp(result)
 }))
 
 apiRouter.use((err, req, res, next) => {
