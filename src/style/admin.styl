@@ -1,13 +1,11 @@
 body
     margin: 0
-    background-color: #f5f5f5
-    font-family: Helvetica
 
 nav
     display: block
     height: 60px
-    background-color: #6b6b6b
-    border-bottom: 5px solid #383838
+    background-color: #00BCD4
+    border-bottom: 5px solid #0096a9
     ul
         display: inline-block
         margin: 0
@@ -20,14 +18,14 @@ nav
             display: inline-block
             a
                 font-size: 180%
-                padding: 15px
+                padding: 16px
                 line-height: 2
-                color: #ddd
+                color: #fff
                 text-decoration: none
                 text-transform: uppercase
                 font-weight: bold
                 &:hover
-                    background-color: #868686
+                    background-color: #00c9e2
 
 .wrapper
     min-height: 100vh
@@ -35,3 +33,17 @@ nav
     .container
         overflow: hidden
         padding: 10px
+        background-color: #fff
+        min-height: 100vh
+
+.user
+    min-height: 180px
+    .avatar
+        float: left
+    .info
+        margin-left: 170px
+        .display_name
+            font-weight: bold
+            font-size: 120%
+        .username
+            font-size: 80%

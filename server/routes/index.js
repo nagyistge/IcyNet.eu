@@ -684,10 +684,7 @@ router.get('/partials/:view', wrap(async (req, res, next) => {
 */
 
 router.get('/logout', wrap(async (req, res) => {
-  if (req.session.user) {
-    delete req.session.user
-  }
-
+  req.session.destroy()
   res.redirect('/')
 }))
 

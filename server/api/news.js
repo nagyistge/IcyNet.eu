@@ -7,25 +7,6 @@ function slugify (title) {
   return title.toLowerCase().replace(/\W/g, '-').substring(0, 16)
 }
 
-/* ppp - Posts Per Page; dcount - Post Count; page - number of current page */
-function Pagination (ppp, dcount, page) {
-  if (!ppp) ppp = 5
-  if (!dcount) return null
-
-  let pageCount = Math.ceil(dcount / ppp)
-  if (page > pageCount) page = pageCount
-
-  let offset = (page - 1) * ppp
-
-  return {
-    page: page,
-    perPage: ppp,
-    pages: pageCount,
-    offset: offset,
-    total: dcount
-  }
-}
-
 async function cleanArticle (entry, shortenContent = false) {
   let poster = await API.User.get(entry.user_id)
   let article = {
@@ -76,7 +57,7 @@ const News = {
     }
 
     count = count[0].ids
-    let paginated = Pagination(perPage, parseInt(count), page)
+    let paginated = API.Pagination(perPage, parseInt(count), page)
     let news = await Models.News.query().orderBy('created_at', 'desc').offset(paginated.offset).limit(perPage)
 
     let articles = []

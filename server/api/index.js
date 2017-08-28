@@ -55,6 +55,24 @@ const API = {
   Hash: (len) => {
     return crypto.randomBytes(len).toString('hex')
   },
+  /* ppp - Posts Per Page; dcount - Post Count; page - number of current page */
+  Pagination: (ppp, dcount, page) => {
+    if (!ppp) ppp = 5
+    if (!dcount) return null
+
+    let pageCount = Math.ceil(dcount / ppp)
+    if (page > pageCount) page = pageCount
+
+    let offset = (page - 1) * ppp
+
+    return {
+      page: page,
+      perPage: ppp,
+      pages: pageCount,
+      offset: offset,
+      total: dcount
+    }
+  },
   User: {
     get: async function (identifier) {
       let scope = 'id'
