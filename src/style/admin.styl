@@ -35,6 +35,11 @@ nav
         padding: 10px
         background-color: #fff
         min-height: 100vh
+    .left, .right
+        width: 48%
+        display: inline-block
+    .right
+        float: right
 
 .user
     min-height: 180px
@@ -47,3 +52,18 @@ nav
             font-size: 120%
         .username
             font-size: 80%
+
+.application
+    height: 200px
+    #hiddensecret
+        display: none
+        &.shown
+            display: inline-block
+    .link
+        color: green
+        cursor: pointer
+        display: inline-block
+
+form
+    .message
+        display: none

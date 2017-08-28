@@ -55,14 +55,154 @@ function loadUsers (page) {
   })
 }
 
+function editClient (id) {
+  $.ajax({
+    type: 'get',
+    url: '/admin/api/client/' + id,
+    success: function (data) {
+      window.Dialog.openTemplate('Editing client', 'clientEdit', data)
+      $('#ffsubmit').submit(function (e) {
+        e.preventDefault()
+        $.ajax({
+          type: 'post',
+          url: '/admin/api/client/update',
+          data: $(this).serialize(),
+          success: function (data) {
+            window.Dialog.close()
+            loadClients(1)
+          },
+          error: function (e) {
+            if (e.responseJSON && e.responseJSON.error) {
+              $('form .message').show()
+              $('form .message').text(e.responseJSON.error)
+            }
+          }
+        })
+      })
+    }
+  })
+}
+
+function deleteClient (id) {
+  window.Dialog.openTemplate('Deleting client', 'clientRemove')
+  $('#fremove').click(function (e) {
+    $.post({
+      url: '/admin/api/client/delete/' + id,
+      success: function (data) {
+        window.Dialog.close()
+        loadClients(1)
+      }
+    })
+  })
+}
+
+function loadClients (page) {
+  $.ajax({
+    type: 'get',
+    url: '/admin/api/clients',
+    data: {page: page},
+    success: function (data) {
+      $('#clientlist').html('')
+      if (data.error) {
+        $('#clientlist').html('<div class="message error">' + data.error + '</div>')
+        return
+      }
+
+      var pgbtn = paginationButton(data.page)
+      $('#clientlist').append(pgbtn)
+      $('.pgn .button').click(function (e) {
+        var pgnum = $(this).data('page')
+        if (pgnum == null) return
+        loadClients(parseInt(pgnum))
+      })
+
+      for (var u in data.clients) {
+        var client = data.clients[u]
+        client.created_at = new Date(client.created_at)
+        var tmp = buildTemplateScript('client', client)
+        $('#clientlist').append(tmp)
+      }
+
+      $('.edit').click(function (e) {
+        var client = $(this).data('client')
+        editClient(parseInt(client))
+      })
+
+      $('.delete').click(function (e) {
+        var client = $(this).data('client')
+        deleteClient(parseInt(client))
+      })
+
+      $('.newsecret').click(function (e) {
+        var client = $(this).data('client')
+        $.post({
+          url: '/admin/api/client/new_secret/' + parseInt(client),
+          success: function (e) {
+            loadClients(1)
+          }
+        })
+      })
+    }
+  })
+}
+
 $(document).ready(function () {
+  window.Dialog = $('#dialog')
+  window.Dialog.open = function (title, content, pad) {
+    $('#dialog #title').text(title)
+    if (pad) {
+      content = '<div class="pad">' + content + '</div>'
+    }
+    $('#dialog #content').html(content)
+    $('#dialog').fadeIn()
+  }
+
+  window.Dialog.close = function () {
+    $('#dialog').fadeOut('fast', function () {
+      $('#dialog #content').html('')
+    })
+  }
+
+  window.Dialog.openTemplate = function (title, template, data = {}) {
+    window.Dialog.open(title, buildTemplateScript(template, data), true)
+  }
+
+  $('#dialog #close').click(function (e) {
+    window.Dialog.close()
+  })
+
   if ($('#userlist').length) {
     loadUsers(1)
   }
 
+  if ($('#clientlist').length) {
+    loadClients(1)
+
+    $('#new').click(function (e) {
+      window.Dialog.openTemplate('New Client', 'clientNew')
+      $('#fnsubmit').submit(function (e) {
+        e.preventDefault()
+        $.post({
+          url: '/admin/api/client/new',
+          data: $(this).serialize(),
+          success: function (data) {
+            window.Dialog.close()
+            loadClients(1)
+          },
+          error: function (e) {
+            if (e.responseJSON && e.responseJSON.error) {
+              $('form .message').show()
+              $('form .message').text(e.responseJSON.error)
+            }
+          }
+        })
+      })
+    })
+  }
+
   setInterval(function () {
     $.get({
-      url: '/admin/api/access',
+      url: '/admin/access',
       success: function (data) {
         if (data && data.access) return
         window.location.reload()

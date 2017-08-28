@@ -30,7 +30,7 @@ router.use(wrap(async (req, res, next) => {
  * ================
  */
 
-apiRouter.get('/access', (req, res) => {
+router.get('/access', (req, res) => {
   if (!req.session.accesstime || req.session.accesstime < Date.now()) {
     return res.status(401).jsonp({error: 'Access expired'})
   }
@@ -61,7 +61,11 @@ router.post('/', wrap(async (req, res, next) => {
 // Ensure that the admin panel is not kept open for prolonged time
 router.use(wrap(async (req, res, next) => {
   if (req.session.accesstime) {
-    if (req.session.accesstime > Date.now()) return next()
+    if (req.session.accesstime > Date.now()) {
+      req.session.accesstime = Date.now() + 300000
+      return next()
+    }
+
     delete req.session.accesstime
   }
 
@@ -95,6 +99,88 @@ apiRouter.get('/users', wrap(async (req, res) => {
   let users = await API.getAllUsers(page)
   res.jsonp(users)
 }))
+
+apiRouter.get('/clients', wrap(async (req, res) => {
+  let page = parseInt(req.query.page)
+  if (isNaN(page) || page < 1) {
+    page = 1
+  }
+
+  let clients = await API.getAllClients(page)
+  res.jsonp(clients)
+}))
+
+apiRouter.get('/client/:id', wrap(async (req, res) => {
+  let id = parseInt(req.params.id)
+  if (isNaN(id)) {
+    return res.status(400).jsonp({error: 'Invalid number'})
+  }
+
+  let client = await API.getClient(id)
+  if (!client) return res.status(400).jsonp({error: 'Invalid client'})
+
+  res.jsonp(client)
+}))
+
+apiRouter.post('/client/new', wrap(async (req, res) => {
+  if (req.body.csrf !== req.session.csrf) {
+    return res.status(400).jsonp({error: 'Invalid session'})
+  }
+
+  let update = await API.createClient(req.body, req.session.user)
+  if (update.error) {
+    return res.status(400).jsonp({error: update.error})
+  }
+
+  res.status(204).end()
+}))
+
+apiRouter.post('/client/update', wrap(async (req, res) => {
+  if (!req.body.id) return res.status(400).jsonp({error: 'ID missing'})
+  if (req.body.csrf !== req.session.csrf) {
+    return res.status(400).jsonp({error: 'Invalid session'})
+  }
+
+  let update = await API.updateClient(parseInt(req.body.id), req.body)
+  if (update.error) {
+    return res.status(400).jsonp({error: update.error})
+  }
+
+  res.status(204).end()
+}))
+
+apiRouter.post('/client/new_secret/:id', wrap(async (req, res) => {
+  let id = parseInt(req.params.id)
+  if (isNaN(id)) {
+    return res.status(400).jsonp({error: 'Invalid number'})
+  }
+
+  let client = await API.newSecret(id)
+  if (client.error) {
+    return res.status(400).jsonp({error: client.error})
+  }
+
+  res.jsonp(client)
+}))
+
+apiRouter.post('/client/delete/:id', wrap(async (req, res) => {
+  let id = parseInt(req.params.id)
+  if (isNaN(id)) {
+    return res.status(400).jsonp({error: 'Invalid number'})
+  }
+
+  let client = await API.removeClient(id)
+  if (client.error) {
+    return res.status(400).jsonp({error: client.error})
+  }
+
+  res.jsonp(client)
+}))
+
+apiRouter.use((err, req, res, next) => {
+  console.error(err)
+  return res.status(500).jsonp({error: 'Internal server error'})
+})
 
 router.use('/api', apiRouter)
 

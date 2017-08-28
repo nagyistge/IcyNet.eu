@@ -4,3 +4,73 @@ block body
 	.container
 		.content
 			h1 Manage OAuth2 Clients
+			.button(id="new") New Client
+			#clientlist
+	.templates
+		script(type="x-tmpl-mustache" id="client").
+			<div class="application" id="client-{{id}}">
+			<div class="picture">
+				{{#icon}}
+					<img src="/usercontent/images/{{icon}}">
+				{{/icon}}
+				{{^icon}}
+					<div class="noicon"><i class="fa fa-fw fa-gears"></i></div>
+				{{/icon}}
+			</div>
+			<div class="info">
+				<div class="stamps">
+					{{#verified}}
+					<div class="verified"><i class="fa fa-fw fa-check"></i></div>
+					{{/verified}}
+				</div>
+				<div class="name">{{title}}</div>
+				<div class="description">{{description}}</div>
+				<a class="url" href="{{url}}" target="_blank" rel="nofollow">{{url}}</a>
+				<div class="scope">Scopes: {{scope}}</div>
+				<div class="redirect_url">Redirect: {{redirect_url}}</div>
+				<div class="id">Client ID: {{id}}</div>
+				<div class="secret">Client Secret: <div id="hiddensecret">{{secret}}</div>
+					<div class="link" id="showbutton" onclick="$(this).parent().find('#hiddensecret').toggleClass('shown')">Show</div>
+				</div>
+				<div class="button edit" data-client="{{id}}">Edit</div>
+				<div class="button delete" data-client="{{id}}">Delete</div>
+				<div class="button newsecret" data-client="{{id}}">New Secret</div>
+			</div>
+			</div>
+		script(type="x-tmpl-mustache" id="clientEdit").
+			<form id="ffsubmit">
+				<div class="message error"></div>
+				<input type="hidden" name="id" value="{{id}}">
+				<input type="hidden" name="csrf" value="#{csrf}">
+				<label for="title">Title</label>
+				<input type="text" id="title" name="title" value="{{title}}">
+				<label for="description">Description</label>
+				<input type="text" id="description" name="description" value="{{description}}">
+				<label for="url">URL</label>
+				<input type="text" id="url" name="url" value="{{url}}">
+				<label for="scope">Scope</label>
+				<input type="text" id="scope" name="scope" value="{{scope}}">
+				<label for="redirect_url">Redirect</label>
+				<input type="text" id="redirect_url" name="redirect_url" value="{{redirect_url}}">
+				<input type="submit" value="Edit">
+			</form>
+		script(type="x-tmpl-mustache" id="clientNew").
+			<form id="fnsubmit">
+				<div class="message error"></div>
+				<input type="hidden" name="csrf" value="#{csrf}">
+				<label for="title">Title</label>
+				<input type="text" id="title" name="title">
+				<label for="description">Description</label>
+				<input type="text" id="description" name="description">
+				<label for="url">URL</label>
+				<input type="text" id="url" name="url">
+				<label for="scope">Scope</label>
+				<input type="text" id="scope" name="scope">
+				<label for="redirect_url">Redirect</label>
+				<input type="text" id="redirect_url" name="redirect_url">
+				<input type="submit" value="Create">
+			</form>
+		script(type="x-tmpl-mustache" id="clientRemove").
+			<p>Are you sure?</p>
+			<div class="button" onclick="window.Dialog.close()">No</div>
+			<div class="button" id="fremove">Yes, I'm sure</div>

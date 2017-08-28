@@ -26,32 +26,13 @@ html
 				ul.right
 					li
 						a(href="/user/manage") #{user.display_name}
+		block dialog
+			.dialog-drop#dialog
+				.dialog
+					.head
+						#title
+						#close
+							i.fa.fa-fw.fa-times
+					.content#content
 		.wrapper
 			block body
-		.templates
-			script(type="x-tmpl-mustache" id="user").
-				<div class="user" id="user-{{id}}">
-				<div class="avatar">
-					{{#avatar_file}}
-						<img src="/usercontent/images/{{avatar_file}}">
-					{{/avatar_file}}
-					{{^avatar_file}}
-						<img src="/static/image/avatar.png">
-					{{/avatar_file}}
-				</div>
-				<div class="info">
-					<div class="stamps">
-						{{^activated}}
-						<div class="noactive"><i class="fa fa-fw fa-envelope"></i></div>
-						{{/activated}}
-					</div>
-					<div class="display_name">{{display_name}}</div>
-					<div class="username">{{username}}</div>
-					<div class="email">{{email}}</div>
-					<div class="privilege">Privilege: {{nw_privilege}} points</div>
-					<div class="timestamp">{{created_at}}</div>
-					{{^password}}
-					<div class="external"><b>Used external login</b></div>
-					{{/password}}
-				</div>
-				</div>
