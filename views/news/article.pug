@@ -1,0 +1,55 @@
+extends ../layout.pug
+
+block append links
+	if editing
+		script(src="//cdnjs.cloudflare.com/ajax/libs/ckeditor/4.7.2/ckeditor.js")
+
+block title
+	if article
+		|Icy Network - News - #{article.title}
+	else
+		|Icy Network - News - 404
+
+block body
+	.document
+		.content
+			if !article
+				span.error No such article
+			else
+				.article
+					if user && user.privilege && user.privilege > 0 && !editing
+						a.button(style="float: right;" href="?edit=1") Edit
+					.title= article.title
+					.author Published by 
+						span #{article.author.display_name} 
+						|at 
+						.timestamp #{new Date(article.created_at)}
+					if editing
+						.content(contenteditable="true" id="editor1")!= article.content
+					else
+						.content!= article.content
+					if editing
+						.button(id="done") Done editing
+						br
+						script.
+							CKEDITOR.disableAutoInline = true;
+							CKEDITOR.inline('editor1');
+							$('#done').click(function (e) {
+								let data = CKEDITOR.instances.editor1.getData();
+								$.post({
+									url: '/api/news/edit/#{article.id}',
+									data: {content: data},
+									success: function () {
+										window.location.href = '/news/#{article.id}-#{article.slug}'
+									},
+									error: function (e) {
+										if (e.responseJSON && e.responseJSON.error) {
+											alert(e.responseJSON.error);
+										}
+									}
+								});
+							});
+
+			.return
+				a(href="/news") Back to the news archive
+

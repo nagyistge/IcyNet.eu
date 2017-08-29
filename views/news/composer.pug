@@ -1,0 +1,31 @@
+extends ../layout.pug
+
+block append links
+	script(src="//cdnjs.cloudflare.com/ajax/libs/ckeditor/4.7.2/ckeditor.js")
+
+block title
+	|Icy Network - News - Compose
+
+block body
+	.document
+		.content
+			if message.text
+				if message.error
+					.message.error
+						span #{message.text}
+				else
+					.message
+						span #{message.text}
+			form(action="", method="post")
+				input(type="hidden", name="csrf", value=csrf)
+				label(for="title") Title
+				input(type="text", name="title", id="title")
+				label(for="composer1") Content
+				textarea(name="content" id="composer1")
+				label(for="tags") Tags
+				input(type="text", name="tags", id="tags")
+				input(type="submit", value="Submit")
+			script.
+				CKEDITOR.replace('composer1')
+			a(href="/news") Back to news directory
+

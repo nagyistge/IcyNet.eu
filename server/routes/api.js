@@ -288,6 +288,21 @@ router.get('/news/all/', (req, res) => {
   res.redirect('/api/news/all/1')
 })
 
+router.post('/news/edit/:id', wrap(async (req, res, next) => {
+  if (!req.session.user || req.session.user.privilege < 1) return next()
+  if (!req.params.id || isNaN(parseInt(req.params.id))) {
+    return res.status(400).jsonp({error: 'Invalid ID number.'})
+  }
+
+  let id = parseInt(req.params.id)
+  let result = await News.edit(id, req.body)
+  if (result.error) {
+    return res.status(400).jsonp({error: result.error})
+  }
+
+  res.status(204).end()
+}))
+
 // Fetch article
 router.get('/news/:id', wrap(async (req, res) => {
   if (!req.params.id || isNaN(parseInt(req.params.id))) {
@@ -436,6 +451,11 @@ router.get('/user/donations', wrap(async (req, res, next) => {
 // 404
 router.use((req, res) => {
   res.status(404).jsonp({error: 'Not found'})
+})
+
+router.use((err, req, res, next) => {
+  console.error(err)
+  res.jsonp({error: 'Internal server error.'})
 })
 
 module.exports = router

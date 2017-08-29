@@ -228,8 +228,8 @@ $(document).ready(function () {
     })
   }
 
-  window.Dialog.openTemplate = function (title, template, data = {}) {
-    window.Dialog.open(title, buildTemplateScript(template, data), true)
+  window.Dialog.openTemplate = function (title, template, data) {
+    window.Dialog.open(title, buildTemplateScript(template, data || {}), true)
   }
 
   $('#dialog #close').click(function (e) {

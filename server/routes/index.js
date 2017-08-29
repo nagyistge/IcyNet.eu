@@ -31,6 +31,7 @@ function setSession (req, user) {
     display_name: user.display_name,
     email: user.email,
     avatar_file: user.avatar_file,
+    privilege: user.nw_privilege,
     session_refresh: Date.now() + 1800000 // 30 minutes
   }
 }
@@ -65,10 +66,10 @@ router.use(wrap(async (req, res, next) => {
 
       // Update user session
       let udata = await API.User.get(req.session.user.id)
+      setSession(req, udata)
 
       // Update IP address
       await API.User.update(udata, {ip_address: req.realIP})
-      setSession(req, udata)
     }
   }
 
@@ -431,7 +432,7 @@ router.post('/register', accountLimiter, wrap(async (req, res, next) => {
   }
 
   // 6th Check: reCAPTCHA (if configuration contains key)
-  if (config.security.recaptcha && config.security.recaptcha.site_key) {
+  if (config.security && config.security.recaptcha && config.security.recaptcha.site_key) {
     if (!req.body['g-recaptcha-response']) return formError(req, res, 'Please complete the reCAPTCHA!')
 
     try {
@@ -648,6 +649,39 @@ router.get('/docs/:name', (req, res, next) => {
   res.render('document', {doc: doc})
 })
 
+/*
+  ========
+    NEWS
+  ========
+*/
+
+function privileged (req, res, next) {
+  if (!req.session.user) return res.redirect('/news')
+  if (req.session.user.privilege < 1) return res.redirect('/news')
+  next()
+}
+
+router.get('/news/writer', privileged, wrap(async (req, res) => {
+  res.render('news/composer')
+}))
+
+router.post('/news/writer', privileged, wrap(async (req, res) => {
+  if (req.body.csrf !== req.session.csrf) {
+    return formError(req, res, 'Invalid session! Try reloading the page.')
+  }
+
+  if (!req.body.title || !req.body.content) {
+    return formError(req, res, 'Required fields missing!')
+  }
+
+  let result = await News.compose(req.session.user, req.body)
+  if (result.error) {
+    return formError(req, res, result.error)
+  }
+
+  res.redirect('/news/' + result.id + '-' + result.slug)
+}))
+
 // Serve news
 router.get('/news/:id?-*', wrap(async (req, res) => {
   let id = parseInt(req.params.id)
@@ -660,8 +694,12 @@ router.get('/news/:id?-*', wrap(async (req, res) => {
     return res.status(404).render('article', {article: null})
   }
 
-  res.header('Cache-Control', 'max-age=' + 24 * 60 * 60 * 1000) // 1 day
-  res.render('article', {article: article})
+  let editing = false
+  if (req.query.edit === '1' && req.session.user && req.session.user.privilege > 1) {
+    editing = true
+  }
+
+  res.render('news/article', {article: article, editing: editing})
 }))
 
 router.get('/news/', wrap(async (req, res) => {
@@ -672,7 +710,7 @@ router.get('/news/', wrap(async (req, res) => {
 
   let news = await News.listNews(page)
 
-  res.render('news', {news: news})
+  res.render('news/news', {news: news})
 }))
 
 // Render partials

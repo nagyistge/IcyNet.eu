@@ -1,4 +1,4 @@
-extends layout.pug
+extends ../layout.pug
 
 block title
 	|Icy Network - News
@@ -6,7 +6,9 @@ block title
 block body
 	.document
 		.content
-			h1 Icy Network News
+			if user && user.privilege && user.privilege > 0
+				a.button(style="float: right;" href="/news/writer") New Article
+			h1 Icy Network News Archive
 			if news.error
 				span.error There are no articles to show.
 			else

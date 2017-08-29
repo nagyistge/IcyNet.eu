@@ -78,6 +78,31 @@ const News = {
     article = article[0]
 
     return cleanArticle(article)
+  },
+  compose: async (user, body) => {
+    let article = {
+      title: body.title,
+      content: body.content,
+      tags: body.tags || '',
+      user_id: user.id,
+      created_at: new Date()
+    }
+
+    let result = await Models.News.query().insert(article)
+    result.slug = slugify(result.title)
+
+    return result
+  },
+  edit: async (id, body) => {
+    if (!body.content) return {error: 'Content required'}
+    let patch = {
+      content: body.content,
+      updated_at: new Date()
+    }
+
+    let result = await Models.News.query().patchAndFetchById(id, patch)
+    if (!result) return {error: 'Something went wrong.'}
+    return {}
   }
 }
 
