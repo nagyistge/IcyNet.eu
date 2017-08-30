@@ -115,8 +115,6 @@ const API = {
     return cleanClientObject(raw[0])
   },
   updateClient: async function (id, data) {
-    if (isNaN(id)) return {error: 'Invalid client ID'}
-
     let fields = [
       'title', 'description', 'url', 'redirect_url', 'scope'
     ]
@@ -207,7 +205,6 @@ const API = {
     }
   },
   removeBan: async function (banId) {
-    if (isNaN(banId)) return {error: 'Invalid number'}
     return Models.Ban.query().delete().where('id', banId)
   },
   addBan: async function (data, adminId) {

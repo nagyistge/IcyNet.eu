@@ -19,11 +19,11 @@ block body
 			form(action="", method="post")
 				input(type="hidden", name="csrf", value=csrf)
 				label(for="title") Title
-				input(type="text", name="title", id="title")
+				input(type="text", name="title", id="title", value=formkeep.title)
 				label(for="composer1") Content
-				textarea(name="content" id="composer1")
+				textarea(name="content" id="composer1") #{formkeep.content}
 				label(for="tags") Tags
-				input(type="text", name="tags", id="tags")
+				input(type="text", name="tags", id="tags", value=formkeep.tags)
 				input(type="submit", value="Submit")
 			script.
 				CKEDITOR.replace('composer1')

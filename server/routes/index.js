@@ -36,6 +36,18 @@ function setSession (req, user) {
   }
 }
 
+function redirectLogin (req, res) {
+  let uri = '/'
+  if (req.session.redirectUri) {
+    uri = req.session.redirectUri
+    delete req.session.redirectUri
+  } else if (req.query.redirect) {
+    uri = req.query.redirect
+  }
+
+  res.redirect(uri)
+}
+
 router.use(wrap(async (req, res, next) => {
   // Add form messages into the template rendering if present
   let messages = req.flash('message')
@@ -104,6 +116,19 @@ function extraButtons (req, res, next) {
   next()
 }
 
+// Retrieve form data if formError was called
+function formKeep (req, res, next) {
+  let dataSave = req.flash('formkeep')
+  if (dataSave.length) {
+    dataSave = dataSave[0]
+  } else {
+    dataSave = {}
+  }
+
+  res.locals.formkeep = dataSave
+  next()
+}
+
 // Make sure the user is logged in
 // Redirect to login page and store the current path in the session for redirecting later
 function ensureLogin (req, res, next) {
@@ -113,30 +138,13 @@ function ensureLogin (req, res, next) {
 }
 
 router.get('/login', extraButtons, (req, res) => {
-  if (req.session.user) {
-    let uri = '/'
-    if (req.session.redirectUri) {
-      uri = req.session.redirectUri
-      delete req.session.redirectUri
-    }
-
-    return res.redirect(uri)
-  }
+  if (req.session.user) return redirectLogin(req, res)
 
   res.render('user/login')
 })
 
-router.get('/register', extraButtons, (req, res) => {
-  if (req.session.user) return res.redirect('/')
-
-  let dataSave = req.flash('formkeep')
-  if (dataSave.length) {
-    dataSave = dataSave[0]
-  } else {
-    dataSave = {}
-  }
-
-  res.locals.formkeep = dataSave
+router.get('/register', extraButtons, formKeep, (req, res) => {
+  if (req.session.user) return redirectLogin(req, res)
 
   if (config.security.recaptcha && config.security.recaptcha.site_key) {
     res.locals.recaptcha = config.security.recaptcha.site_key
@@ -316,31 +324,12 @@ router.post('/login/verify', wrap(async (req, res, next) => {
   let user = await API.User.get(req.session.totp_check)
   delete req.session.totp_check
 
-  // Set session
-  req.session.user = {
-    id: user.id,
-    username: user.username,
-    display_name: user.display_name,
-    email: user.email,
-    avatar_file: user.avatar_file,
-    session_refresh: Date.now() + 1800000 // 30 minutes
-  }
-
-  let uri = '/'
-  if (req.session.redirectUri) {
-    uri = req.session.redirectUri
-    delete req.session.redirectUri
-  }
-
-  if (req.query.redirect) {
-    uri = req.query.redirect
-  }
-
-  res.redirect(uri)
+  setSession(req, user)
+  redirectLogin(req, res)
 }))
 
-// Log the user in
-router.post('/login', wrap(async (req, res, next) => {
+// Log the user in. Limited resource
+router.post('/login', accountLimiter, wrap(async (req, res, next) => {
   if (req.session.user) return next()
   if (!req.body.username || !req.body.password || req.body.username === '') {
     return res.redirect('/login')
@@ -399,6 +388,12 @@ router.post('/register', accountLimiter, wrap(async (req, res, next) => {
 
   if (req.body.csrf !== req.session.csrf) {
     return formError(req, res, 'Invalid session! Try reloading the page.')
+  }
+
+  // Ban check
+  let banStatus = await API.User.getBanStatus(req.realIP, true)
+  if (banStatus.length) {
+    return res.render('user/banned', {bans: banStatus, ipban: true})
   }
 
   // 1st Check: Username Characters and length
@@ -470,7 +465,7 @@ router.post('/register', accountLimiter, wrap(async (req, res, next) => {
   // Do not include activation link message when the user is already activated
   let registerMessage = 'Account created successfully!'
   if (newUser.user && newUser.user.activated !== 1) {
-    registerMessage += ' Please check your email for an activation link.'
+    registerMessage += ' Please check your inbox for an activation link. Also, make sure to look into spam folders.'
   }
 
   req.flash('message', {error: false, text: registerMessage})
@@ -655,17 +650,17 @@ router.get('/docs/:name', (req, res, next) => {
   ========
 */
 
-function privileged (req, res, next) {
+function newsPrivilege (req, res, next) {
   if (!req.session.user) return res.redirect('/news')
   if (req.session.user.privilege < 1) return res.redirect('/news')
   next()
 }
 
-router.get('/news/writer', privileged, wrap(async (req, res) => {
+router.get('/news/compose', newsPrivilege, formKeep, wrap(async (req, res) => {
   res.render('news/composer')
 }))
 
-router.post('/news/writer', privileged, wrap(async (req, res) => {
+router.post('/news/compose', newsPrivilege, wrap(async (req, res) => {
   if (req.body.csrf !== req.session.csrf) {
     return formError(req, res, 'Invalid session! Try reloading the page.')
   }

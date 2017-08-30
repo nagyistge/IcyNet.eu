@@ -94,7 +94,6 @@ const News = {
     return result
   },
   edit: async (id, body) => {
-    if (!body.content) return {error: 'Content required'}
     let patch = {
       content: body.content,
       updated_at: new Date()

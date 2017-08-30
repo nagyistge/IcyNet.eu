@@ -289,12 +289,18 @@ router.get('/news/all/', (req, res) => {
 })
 
 router.post('/news/edit/:id', wrap(async (req, res, next) => {
+  let id = parseInt(req.params.id)
+
   if (!req.session.user || req.session.user.privilege < 1) return next()
-  if (!req.params.id || isNaN(parseInt(req.params.id))) {
+
+  if (!id || isNaN(id)) {
     return res.status(400).jsonp({error: 'Invalid ID number.'})
   }
 
-  let id = parseInt(req.params.id)
+  if (!req.body.content) {
+    return res.status(400).jsonp({error: 'Content is required.'})
+  }
+
   let result = await News.edit(id, req.body)
   if (result.error) {
     return res.status(400).jsonp({error: result.error})

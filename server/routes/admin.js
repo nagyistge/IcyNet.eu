@@ -140,12 +140,15 @@ apiRouter.post('/client/new', wrap(async (req, res) => {
 }))
 
 apiRouter.post('/client/update', wrap(async (req, res) => {
-  if (!req.body.id) return res.status(400).jsonp({error: 'ID missing'})
+  let id = parseInt(req.body.id)
+
+  if (!id || isNaN(id)) return res.status(400).jsonp({error: 'ID missing'})
+
   if (req.body.csrf !== req.session.csrf) {
     return res.status(400).jsonp({error: 'Invalid session'})
   }
 
-  let update = await API.updateClient(parseInt(req.body.id), req.body)
+  let update = await API.updateClient(id, req.body)
   if (update.error) {
     return res.status(400).jsonp({error: update.error})
   }
