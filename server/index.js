@@ -112,3 +112,17 @@ cluster.on('exit', (worker, code, signal) => {
 })
 
 initialize()
+
+process.stdin.resume()
+
+process.on('SIGUSR2', () => {
+  console.log('Received SIGUSR2. Restarting workers.')
+
+  if (workers.length) {
+    for (let i in workers) {
+      workers[i].send('stop')
+    }
+  }
+
+  spawnWorkers()
+})
