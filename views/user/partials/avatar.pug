@@ -8,6 +8,8 @@
 	.inputting
 		h3 Upload new
 		.message.error
+		small Max filesize: 1 MB, only .png and .jpg allowed
+		br
 		input(type="file", id="fileinput")
 	.editor(style="display: none")
 		h3 Crop the image
@@ -125,6 +127,8 @@ script.
 			message('This browser doesn\'t seem to support the `files` property of file inputs.')
 		} else if (!input.files[0]) {
 			message('Please select a file.')
+		} else if (input.files[0].size > 1000000) {
+			message('This file is too big. Max: 1 MB')
 		} else {
 			file = input.files[0]
 			fr = new FileReader()
