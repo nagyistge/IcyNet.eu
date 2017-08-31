@@ -51,6 +51,11 @@ app.use((req, res, next) => {
     csrf: req.session.csrf
   })
 
+  // Add Piwik tracker if configured
+  if (config.piwik && config.piwik.site_id) {
+    res.locals.piwik = config.piwik
+  }
+
   next()
 })
 
