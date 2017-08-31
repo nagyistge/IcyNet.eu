@@ -49,6 +49,43 @@ function keysAvailable (object, required) {
   return found
 }
 
+// Clean up the donation endpoint for ease of use
+async function cleanUpDonation (obj, mcOnly, timeframe) {
+  if (timeframe && new Date(obj.created_at).getTime() < timeframe) {
+    return null
+  }
+
+  let user
+
+  if (obj.user_id) {
+    user = await API.User.get(obj.user_id)
+  }
+
+  let result = {
+    trackId: obj.id,
+    amount: obj.amount,
+    donated: obj.created_at
+  }
+
+  if (user) {
+    result.name = user.display_name
+  }
+
+  let sources = obj.source.split(';')
+  for (let i in sources) {
+    if (sources[i].indexOf('mcu:') === 0) {
+      let mcu = sources[i].split(':')[1]
+      if (mcu.match(/^([\w_]{2,16})$/i)) {
+        result.minecraft_username = mcu
+      }
+    }
+  }
+
+  if (!result.minecraft_username && mcOnly) return null
+
+  return result
+}
+
 let txnStore = []
 
 const API = {
@@ -459,23 +496,22 @@ const API = {
     userContributions: async function (user) {
       user = await API.User.ensureObject(user)
 
-      let dbq = await models.Donation.query().where('user_id', user.id)
+      let dbq = await models.Donation.query().orderBy('created_at', 'desc').where('user_id', user.id)
       let contribs = []
 
       for (let i in dbq) {
-        let contrib = dbq[i]
-        let obj = {
-          amount: contrib.amount,
-          donated: contrib.created_at
-        }
+        contribs.push(await cleanUpDonation(dbq[i]))
+      }
 
-        let srcs = contrib.source.split(';')
-        for (let j in srcs) {
-          if (srcs[j].indexOf('mcu') === 0) {
-            obj.minecraft_username = srcs[j].split(':')[1]
-          }
-        }
+      return contribs
+    },
+    allContributions: async function (count, mcOnly, timeframe = 0) {
+      let dbq = await models.Donation.query().orderBy('created_at', 'desc').limit(count)
+      let contribs = []
 
+      for (let i in dbq) {
+        let obj = await cleanUpDonation(dbq[i], mcOnly, timeframe)
+        if (!obj) continue
         contribs.push(obj)
       }
 

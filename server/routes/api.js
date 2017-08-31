@@ -447,10 +447,28 @@ router.post('/paypal/ipn', wrap(async (req, res) => {
   res.status(204).end()
 }))
 
-router.get('/user/donations', wrap(async (req, res, next) => {
+router.get('/donations/user', wrap(async (req, res, next) => {
   if (!req.session.user) return next()
 
   let contribs = await API.Payment.userContributions(req.session.user)
+  res.jsonp(contribs)
+}))
+
+router.get('/donations', wrap(async (req, res, next) => {
+  let count = parseInt(req.query.count)
+  if (isNaN(count)) {
+    count = 10
+  }
+
+  if (count > 10) {
+    count = 10
+  }
+
+  let mcu = req.query.mcu === '1' || req.query.mcu === 'true'
+  let timeFrame = parseInt(req.query.timeFrame)
+  if (isNaN(timeFrame)) timeFrame = 0
+
+  let contribs = await API.Payment.allContributions(count, mcu, timeFrame)
   res.jsonp(contribs)
 }))
 
