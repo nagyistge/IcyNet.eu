@@ -511,7 +511,7 @@ router.post('/user/manage', wrap(async (req, res, next) => {
 }))
 
 // Change user password
-router.post('/user/manage/password', wrap(async (req, res, next) => {
+router.post('/user/manage/password', accountLimiter, wrap(async (req, res, next) => {
   if (!req.session.user) return next()
 
   if (req.body.csrf !== req.session.csrf) {
@@ -562,7 +562,7 @@ router.post('/user/manage/password', wrap(async (req, res, next) => {
 }))
 
 // Change email address
-router.post('/user/manage/email', wrap(async (req, res, next) => {
+router.post('/user/manage/email', accountLimiter, wrap(async (req, res, next) => {
   if (!req.session.user) return next()
 
   if (req.body.csrf !== req.session.csrf) {
