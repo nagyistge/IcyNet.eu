@@ -175,7 +175,7 @@ const API = {
     return Models.OAuth2Client.query().insert(obj)
   },
   removeClient: async function (id) {
-    if (isNaN(id)) return {error: 'Invalid number'}
+    if (isNaN(id)) return {error: 'Invalid ID number'}
     await Models.OAuth2Client.query().delete().where('id', id)
     await Models.OAuth2AuthorizedClient.query().delete().where('client_id', id)
     await Models.OAuth2AccessToken.query().delete().where('client_id', id)

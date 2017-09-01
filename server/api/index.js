@@ -71,7 +71,7 @@ async function cleanUpDonation (obj, mcOnly, timeframe) {
     result.name = user.display_name
   }
 
-  let sources = obj.source.split(';')
+  let sources = obj.source.split(',')
   for (let i in sources) {
     if (sources[i].indexOf('mcu:') === 0) {
       let mcu = sources[i].split(':')[1]
@@ -483,7 +483,7 @@ const API = {
       let donation = {
         user_id: user ? user.id : null,
         amount: (body.mc_gross || body.payment_gross || 'Unknown') + ' ' + (body.mc_currency || 'EUR'),
-        source: source.join(';'),
+        source: source.join(','),
         note: body.memo || '',
         read: 0,
         created_at: new Date(body.payment_date)

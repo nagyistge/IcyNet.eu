@@ -4,7 +4,6 @@ import models from './models'
 import UAPI from './index'
 import qs from 'querystring'
 import oauth from 'oauth-libre'
-import fs from 'fs'
 import path from 'path'
 import url from 'url'
 

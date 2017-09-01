@@ -32,7 +32,7 @@ async function bailOut (file, error) {
   return { error: error }
 }
 
-async function uploadImage (username, fields, files) {
+async function uploadImage (identifier, fields, files) {
   let directory = path.join(uploads, 'images')
   if (!files.image) return {error: 'No image file'}
 
@@ -58,7 +58,7 @@ async function uploadImage (username, fields, files) {
   }
   if (!match) return bailOut(file, 'Invalid image type. Only PNG, JPG and JPEG files are allowed.')
   let extension = imageTypes[contentType]
-  let fileName = username + '-' + fileHash + extension
+  let fileName = identifier + '-' + fileHash + extension
 
   // Check for cropping
   if (fields.x == null || fields.y == null || fields.width == null || fields.height == null) {
@@ -95,7 +95,7 @@ async function uploadImage (username, fields, files) {
         })
     })
 
-    await fs.unlinkAsync(file)
+    await fsBlue.unlinkAsync(file)
   } catch (e) {
     console.error(e)
     return bailOut(file, 'An error occured while cropping.')
