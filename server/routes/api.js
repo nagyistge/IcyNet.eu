@@ -62,10 +62,7 @@ function createSession (req, user) {
 
   if (req.session.redirectUri) {
     uri = req.session.redirectUri
-    delete req.session.redirectUri
-  }
-
-  if (req.query.redirect) {
+  } else if (req.query.redirect) {
     uri = req.query.redirect
   }
 

@@ -38,6 +38,8 @@ function setSession (req, user) {
 
 function redirectLogin (req, res) {
   let uri = '/'
+
+  console.log(req.session.redirectUri, req.session.csrf)
   if (req.session.redirectUri) {
     uri = req.session.redirectUri
     delete req.session.redirectUri
