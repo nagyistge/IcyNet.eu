@@ -20,7 +20,6 @@ router.use(oauthLimiter)
 function ensureLoggedIn (req, res, next) {
   if (req.session.user) return next()
   req.session.redirectUri = req.originalUrl
-  console.log('set return uri', req.session.redirectUri, req.session.csrf)
   res.redirect('/login')
 }
 
