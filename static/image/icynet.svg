@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   width="303.82721"
+   height="35.330757"
+   version="1.1"
+   viewBox="0 0 80.387615 9.3479292"
+   id="svg3874">
+  <metadata
+     id="metadata3880">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs3878">
+    <filter
+       style="color-interpolation-filters:sRGB"
+       id="filter5033"
+       x="0"
+       y="0"
+       width="1.04"
+       height="1.0599999">
+      <feFlood
+         flood-opacity="1"
+         flood-color="rgb(0,89,160)"
+         result="flood"
+         id="feFlood5023" />
+      <feComposite
+         in="flood"
+         in2="SourceGraphic"
+         operator="in"
+         result="composite1"
+         id="feComposite5025" />
+      <feOffset
+         dx="0.4"
+         dy="0.4"
+         result="offset"
+         id="feOffset5029" />
+      <feGaussianBlur
+         in="offset"
+         stdDeviation="0.3"
+         result="blur"
+         id="feGaussianBlur5027" />
+      <feComposite
+         in="SourceGraphic"
+         in2="blur"
+         operator="over"
+         result="composite2"
+         id="feComposite5031" />
+    </filter>
+    <filter
+       style="color-interpolation-filters:sRGB"
+       id="filter5045"
+       x="0"
+       y="0"
+       width="1.01"
+       height="1.0599999">
+      <feFlood
+         flood-opacity="1"
+         flood-color="rgb(0,113,4)"
+         result="flood"
+         id="feFlood5035" />
+      <feComposite
+         in="flood"
+         in2="SourceGraphic"
+         operator="in"
+         result="composite1"
+         id="feComposite5037" />
+      <feOffset
+         dx="0.4"
+         dy="0.4"
+         result="offset"
+         id="feOffset5041" />
+      <feGaussianBlur
+         in="offset"
+         stdDeviation="0.3"
+         result="blur"
+         id="feGaussianBlur5039" />
+      <feComposite
+         in="SourceGraphic"
+         in2="blur"
+         operator="over"
+         result="composite2"
+         id="feComposite5043" />
+    </filter>
+  </defs>
+  <!--style>
+        text {
+            font-family: "Open Sans";
+            font-weight: bold;
+            text-transform: uppercase;
+            text-align: center;
+            text-shadow: 2px 2px 1px #007104;
+            color: #00b300;
+            user-select: none;
+            cursor: default;
+        }
+        #ts1 {
+            color: #03a9f4;
+            text-shadow: 2px 2px 1px #0059a0;
+        }
+    </style-->
+  <g
+     transform="translate(-50.340659,-159.82899)"
+     id="g3872"
+     style="filter:url(#filter5045)">
+    <text
+       x="69.641945"
+       y="168.53017"
+       xml:space="preserve"
+       id="text3870"><tspan
+         id="ts2"
+         x="69.641945"
+         y="168.53017"
+         style="color:#00b300;font-weight:bold;font-family:'Open Sans';text-align:center;text-transform:uppercase;fill:#00b300;fill-opacity:1">NETWORK</tspan></text>
+  </g>
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:141.11109924px;line-height:1.25;font-family:P052;-inkscape-font-specification:P052;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+     x="16.607485"
+     y="2.4248574"
+     id="text4974"><tspan
+       id="tspan4972"
+       x="16.607485"
+       y="122.5104"
+       style="stroke-width:0.26458332" /></text>
+  <g
+     transform="translate(-82.121269,-160.8011)"
+     id="g3872-7">
+    <text
+       x="81.043144"
+       y="169.50345"
+       xml:space="preserve"
+       id="text3870-0"
+       style="fill:#03a9f4;fill-opacity:1;filter:url(#filter5033)"><tspan
+         id="ts2-3"
+         x="81.043144"
+         y="169.50345"
+         style="color:#00b300;font-weight:bold;font-family:'Open Sans';text-align:center;text-transform:uppercase;fill:#03a9f4;fill-opacity:1">ICY</tspan></text>
+  </g>
+</svg>

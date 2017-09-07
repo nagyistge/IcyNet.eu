@@ -1,9 +1,10 @@
-import express from 'express'
-import session from 'express-session'
-import bodyParser from 'body-parser'
 import connectSession from 'connect-redis'
-import path from 'path'
+import session from 'express-session'
+import favicon from 'serve-favicon'
+import bodyParser from 'body-parser'
+import express from 'express'
 import crypto from 'crypto'
+import path from 'path'
 
 import routes from './routes'
 import flash from '../scripts/flash'
@@ -58,6 +59,8 @@ app.use((req, res, next) => {
 
   next()
 })
+
+app.use(favicon(path.join(__dirname, '..', 'static', 'image', 'icynet.ico')))
 
 module.exports = (args) => {
   app.set('view options', {layout: false})

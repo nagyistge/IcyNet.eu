@@ -51,6 +51,7 @@
     "oauth-libre": "^0.9.17",
     "objection": "^0.8.4",
     "pug": "^2.0.0-rc.3",
+    "serve-favicon": "^2.4.3",
     "stylus": "^0.54.5",
     "thirty-two": "^1.0.2",
     "toml": "^2.3.2",
