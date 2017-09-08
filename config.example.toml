@@ -76,3 +76,8 @@
 			pass=""
 		[email.transport.tls]
 			rejectUnauthorized=false
+
+# Application log file location
+[logger]
+	write=true
+	file="/var/log/icynet.log"
