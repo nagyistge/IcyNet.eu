@@ -1,17 +1,31 @@
 import gm from 'gm'
-import fs from 'fs'
 import path from 'path'
 import crypto from 'crypto'
 import Promise from 'bluebird'
 
-const fsBlue = Promise.promisifyAll(fs)
+const fs = Promise.promisifyAll(require('fs'))
 
 const uploads = path.join(__dirname, '../../', 'usercontent')
+const images = path.join(uploads, 'images')
 const maxFileSize = 1000000
 const imageTypes = {
   'image/png': '.png',
   'image/jpg': '.jpg',
   'image/jpeg': '.jpeg'
+}
+
+function decodeBase64Image (dataString) {
+  let matches = dataString.match(/^data:([A-Za-z-+/]+);base64,(.+)$/)
+  let response = {}
+
+  if (matches.length !== 3) {
+    return null
+  }
+
+  response.type = matches[1]
+  response.data = Buffer.from(matches[2], 'base64')
+
+  return response
 }
 
 function saneFields (fields) {
@@ -28,12 +42,35 @@ function saneFields (fields) {
 }
 
 async function bailOut (file, error) {
-  await fsBlue.unlinkAsync(file)
+  await fs.unlinkAsync(file)
   return { error: error }
 }
 
+async function imageBase64 (baseObj) {
+  if (!baseObj) return null
+  let imgData = decodeBase64Image(baseObj)
+
+  if (!imgData) return null
+  if (!imageTypes[imgData.type]) return null
+
+  let imageName = 'base64-' + crypto.randomBytes(12).toString('hex')
+  let ext = imageTypes[imgData.type] || '.png'
+
+  imageName += ext
+
+  let fpath = path.join(images, imageName)
+
+  try {
+    fs.writeFileSync(fpath, imgData.data)
+  } catch (e) {
+    console.error(e)
+    return null
+  }
+
+  return {file: fpath}
+}
+
 async function uploadImage (identifier, fields, files) {
-  let directory = path.join(uploads, 'images')
   if (!files.image) return {error: 'No image file'}
 
   let file = files.image[0]
@@ -89,13 +126,13 @@ async function uploadImage (identifier, fields, files) {
     await new Promise(function (resolve, reject) {
       gm(file)
         .crop(fields.width, fields.height, fields.x, fields.y)
-        .write(path.join(directory, fileName), (err) => {
+        .write(path.join(images, fileName), (err) => {
           if (err) return reject(err)
           resolve(fileName)
         })
     })
 
-    await fsBlue.unlinkAsync(file)
+    await fs.unlinkAsync(file)
   } catch (e) {
     console.error(e)
     return bailOut(file, 'An error occured while cropping.')
@@ -105,5 +142,7 @@ async function uploadImage (identifier, fields, files) {
 }
 
 module.exports = {
-  uploadImage: uploadImage
+  uploadImage: uploadImage,
+  imageBase64: imageBase64,
+  types: imageTypes
 }

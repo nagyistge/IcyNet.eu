@@ -1,7 +1,9 @@
 import config from './load-config'
 import path from 'path'
-import fs from 'fs'
 import util from 'util'
+
+import Promise from 'bluebird'
+const fs = Promise.promisifyAll(require('fs'))
 
 let lfs
 
@@ -49,6 +51,19 @@ console.error = function () {
   stampAndWrite.call(this, realConsoleError, ' err', message)
 }
 
+async function initializeLogger () {
+  let logPath = path.resolve(config.logger.file)
+
+  try {
+    await fs.accessAsync(logPath, fs.W_OK)
+    lfs = fs.createWriteStream(logPath, {flags: 'a'})
+  } catch (e) {
+    lfs = null
+    console.error('Failed to initiate log file write stream')
+    console.error(e.stack)
+  }
+}
+
 module.exports = function () {
   this.logProcess = (pid, msg) => {
     if (msg.indexOf('warn') === 0) {
@@ -64,12 +79,5 @@ module.exports = function () {
 
   // Create log file write stream
   if (!config.logger || !config.logger.write) return
-
-  try {
-    lfs = fs.createWriteStream(path.resolve(config.logger.file), {flags: 'a'})
-  } catch (e) {
-    lfs = null
-    console.error('Failed to initiate log file write stream')
-    console.error(e.stack)
-  }
+  initializeLogger()
 }

@@ -7,6 +7,8 @@ import oauth from 'oauth-libre'
 import path from 'path'
 import url from 'url'
 
+const imgdir = path.join(__dirname, '../../', 'usercontent', 'images')
+
 let twitterApp
 let discordApp
 
@@ -59,7 +61,6 @@ const API = {
     },
     saveAvatar: async (avatarUrl) => {
       if (!avatarUrl) return null
-      let imgdir = path.join(__dirname, '../../', 'usercontent', 'images')
       let imageName = 'download-' + UAPI.Hash(12)
       let uridata = url.parse(avatarUrl)
       let pathdata = path.parse(uridata.path)
@@ -385,12 +386,23 @@ const API = {
       let bans = await API.Common.getBan(null, ipAddress)
       if (bans.length) return { banned: bans, ip: true }
 
-      // Determine profile picture
+      // Download profile picture
       let profilepic = null
+      let aviSnowflake = ddata.avatar
+      if (aviSnowflake) {
+        try {
+          let avpt = await API.Common.saveAvatar('https://cdn.discordapp.com/avatars/' + ddata.id + '/' + aviSnowflake + '.png')
+          if (avpt && avpt.fileName) {
+            profilepic = avpt.fileName
+          }
+        } catch (e) {
+          profilepic = null
+        }
+      }
 
       // Create a new user
       let udataLimited = {
-        username: 'D' + ddata.discriminator,
+        username: ddata.username.replace(/\W+/gi, '_'),
         display_name: ddata.username,
         email: ddata.email || '',
         avatar_file: profilepic,
@@ -398,6 +410,11 @@ const API = {
         ip_address: ipAddress,
         updated_at: new Date(),
         created_at: new Date()
+      }
+
+      // Check if the username is already taken
+      if (await UAPI.User.get(udataLimited.username) != null) {
+        udataLimited.username = udataLimited.username + UAPI.Hash(4)
       }
 
       // Check if the email Discord gave us is already registered, if so,

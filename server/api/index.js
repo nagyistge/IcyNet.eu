@@ -7,7 +7,9 @@ import crypto from 'crypto'
 import notp from 'notp'
 import base32 from 'thirty-two'
 import emailer from './emailer'
-import fs from 'fs'
+
+import Promise from 'bluebird'
+const fs = Promise.promisifyAll(require('fs'))
 
 const emailRe = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 
@@ -191,7 +193,7 @@ const API = {
       if (user.avatar_file != null) {
         let file = path.join(uploadsDir, user.avatar_file)
         if (fs.existsSync(file)) {
-          fs.unlinkSync(file)
+          await fs.unlinkAsync(file)
         }
       }
 
@@ -205,7 +207,7 @@ const API = {
 
       let file = path.join(uploadsDir, user.avatar_file)
       if (fs.existsSync(file)) {
-        fs.unlinkSync(file)
+        await fs.unlinkAsync(file)
       }
 
       return API.User.update(user, {avatar_file: null})
