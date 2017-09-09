@@ -3,6 +3,7 @@ import path from 'path'
 import express from 'express'
 import RateLimit from 'express-rate-limit'
 import config from '../../scripts/load-config'
+import exists from '../../scripts/existsSync'
 import wrap from '../../scripts/asyncRoute'
 import http from '../../scripts/http'
 import API from '../api'
@@ -629,9 +630,9 @@ router.post('/user/manage/email', accountLimiter, wrap(async (req, res, next) =>
 
 // Serve a document form the documents directory, cache it.
 const docsDir = path.join(__dirname, '../../documents')
-router.get('/docs/:name', (req, res, next) => {
+router.get('/docs/:name', wrap(async (req, res, next) => {
   let doc = path.join(docsDir, req.params.name + '.html')
-  if (!fs.existsSync(docsDir) || !fs.existsSync(doc)) {
+  if (!await exists(docsDir) || !await exists(doc)) {
     return next()
   }
 
@@ -643,7 +644,7 @@ router.get('/docs/:name', (req, res, next) => {
 
   res.header('Cache-Control', 'max-age=' + 7 * 24 * 60 * 60 * 1000) // 1 week
   res.render('document', {doc: doc})
-})
+}))
 
 /*
   ========

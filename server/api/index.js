@@ -2,6 +2,7 @@ import path from 'path'
 import cprog from 'child_process'
 import config from '../../scripts/load-config'
 import http from '../../scripts/http'
+import exists from '../../scripts/existsSync'
 import models from './models'
 import crypto from 'crypto'
 import notp from 'notp'
@@ -185,14 +186,14 @@ const API = {
       let uploadsDir = path.join(__dirname, '../../', 'usercontent', 'images')
       let pathOf = path.join(uploadsDir, fileName)
 
-      if (!fs.existsSync(pathOf)) {
+      if (!await exists(pathOf)) {
         return {error: 'No such file'}
       }
 
       // Delete previous upload
       if (user.avatar_file != null) {
         let file = path.join(uploadsDir, user.avatar_file)
-        if (fs.existsSync(file)) {
+        if (await exists(file)) {
           await fs.unlinkAsync(file)
         }
       }
@@ -206,7 +207,7 @@ const API = {
       if (!user.avatar_file) return {}
 
       let file = path.join(uploadsDir, user.avatar_file)
-      if (fs.existsSync(file)) {
+      if (await exists(file)) {
         await fs.unlinkAsync(file)
       }
 

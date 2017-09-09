@@ -61,7 +61,7 @@ async function imageBase64 (baseObj) {
   let fpath = path.join(images, imageName)
 
   try {
-    fs.writeFileSync(fpath, imgData.data)
+    await fs.writeFileAsync(fpath, imgData.data)
   } catch (e) {
     console.error(e)
     return null
