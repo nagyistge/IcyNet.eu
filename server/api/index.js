@@ -14,6 +14,7 @@ const fs = Promise.promisifyAll(require('fs'))
 
 const emailRe = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 
+// Fork a bcrypt process to hash and compare passwords
 function bcryptTask (data) {
   return new Promise((resolve, reject) => {
     let proc = cprog.fork(path.join(__dirname, '../../scripts', 'bcrypt.js'))
@@ -39,6 +40,7 @@ function bcryptTask (data) {
   })
 }
 
+// Make sure an object contains the keys specified in `required`
 function keysAvailable (object, required) {
   let found = true
 
@@ -52,7 +54,7 @@ function keysAvailable (object, required) {
   return found
 }
 
-// Clean up the donation endpoint for ease of use
+// Clean up the donation responses for ease of use
 async function cleanUpDonation (obj, mcOnly, timeframe) {
   if (timeframe && new Date(obj.created_at).getTime() < timeframe) {
     return null

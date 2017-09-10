@@ -44,6 +44,34 @@ const API = {
       await await models.External.query().insert(data)
       return true
     },
+    newUser: async (service, identifier, data) => {
+      let udataLimited = Object.assign({
+        activated: 1,
+        created_at: new Date(),
+        updated_at: new Date()
+      }, data)
+
+      // Check if the username is already taken
+      if (await UAPI.User.get(udataLimited.username) != null) {
+        udataLimited.username = udataLimited.username + UAPI.Hash(4)
+      }
+
+      // Check if the email given to us is already registered, if so,
+      // associate an external node with the user bearing the email
+      if (udataLimited.email && udataLimited.email !== '') {
+        let getByEmail = await UAPI.User.get(udataLimited.email)
+        if (getByEmail) {
+          await API.Common.new(service, identifier, getByEmail)
+          return {error: null, user: getByEmail}
+        }
+      }
+
+      // Create a new user based on the information we got from Facebook
+      let newUser = await models.User.query().insert(udataLimited)
+      await API.Common.new(service, identifier, newUser)
+
+      return newUser
+    },
     remove: async (user, service) => {
       user = await UAPI.User.ensureObject(user, ['password'])
       let userExterns = await models.External.query().orderBy('created_at', 'asc').where('user_id', user.id)
@@ -141,36 +169,16 @@ const API = {
         }
       }
 
-      // Create a new user
-      let udataLimited = {
+      let newUData = {
         username: fbdata.short_name || 'FB' + UAPI.Hash(4),
         display_name: fbdata.name,
         email: fbdata.email || '',
         avatar_file: profilepic,
-        activated: 1,
-        ip_address: data.ip_address,
-        created_at: new Date(),
-        updated_at: new Date()
+        ip_address: data.ip_address
       }
 
-      // Check if the username is already taken
-      if (await UAPI.User.get(udataLimited.username) != null) {
-        udataLimited.username = udataLimited.username + UAPI.Hash(4)
-      }
-
-      // Check if the email Facebook gave us is already registered, if so,
-      // associate an external node with the user bearing the email
-      if (udataLimited.email && udataLimited.email !== '') {
-        let getByEmail = await UAPI.User.get(udataLimited.email)
-        if (getByEmail) {
-          await API.Common.new('fb', getByEmail.id, getByEmail)
-          return {error: null, user: getByEmail}
-        }
-      }
-
-      // Create a new user based on the information we got from Facebook
-      let newUser = await models.User.query().insert(udataLimited)
-      await API.Common.new('fb', uid, newUser)
+      let newUser = await API.Common.newUser('fb', uid, newUData)
+      if (!newUser) return {error: 'Failed to create user.'}
 
       return {error: null, user: newUser}
     }
@@ -268,35 +276,16 @@ const API = {
       }
 
       // Create a new user
-      let udataLimited = {
+      let newUData = {
         username: twdata.screen_name,
         display_name: twdata.name,
         email: twdata.email || '',
         avatar_file: profilepic,
-        activated: 1,
-        ip_address: ipAddress,
-        updated_at: new Date(),
-        created_at: new Date()
+        ip_address: ipAddress
       }
 
-      // Check if the username is already taken
-      if (await UAPI.User.get(udataLimited.username) != null) {
-        udataLimited.username = udataLimited.username + UAPI.Hash(4)
-      }
-
-      // Check if the email Twitter gave us is already registered, if so,
-      // associate an external node with the user bearing the email
-      if (udataLimited.email && udataLimited.email !== '') {
-        let getByEmail = await UAPI.User.get(udataLimited.email)
-        if (getByEmail) {
-          await API.Common.new('twitter', getByEmail.id, getByEmail)
-          return {error: null, user: getByEmail}
-        }
-      }
-
-      // Create a new user based on the information we got from Twitter
-      let newUser = await models.User.query().insert(udataLimited)
-      await API.Common.new('twitter', uid, newUser)
+      let newUser = await API.Common.newUser('twitter', uid, newUData)
+      if (!newUser) return {error: 'Failed to create user.'}
 
       return {error: null, user: newUser}
     }
@@ -401,35 +390,16 @@ const API = {
       }
 
       // Create a new user
-      let udataLimited = {
+      let newUData = {
         username: ddata.username.replace(/\W+/gi, '_'),
         display_name: ddata.username,
         email: ddata.email || '',
         avatar_file: profilepic,
-        activated: 1,
-        ip_address: ipAddress,
-        updated_at: new Date(),
-        created_at: new Date()
+        ip_address: ipAddress
       }
 
-      // Check if the username is already taken
-      if (await UAPI.User.get(udataLimited.username) != null) {
-        udataLimited.username = udataLimited.username + UAPI.Hash(4)
-      }
-
-      // Check if the email Discord gave us is already registered, if so,
-      // associate an external node with the user bearing the email
-      if (udataLimited.email && udataLimited.email !== '') {
-        let getByEmail = await UAPI.User.get(udataLimited.email)
-        if (getByEmail) {
-          await API.Common.new('discord', uid, getByEmail)
-          return {error: null, user: getByEmail}
-        }
-      }
-
-      // Create a new user based on the information we got from Discord
-      let newUser = await models.User.query().insert(udataLimited)
-      await API.Common.new('discord', uid, newUser)
+      let newUser = await API.Common.newUser('discord', uid, newUData)
+      if (!newUser) return {error: 'Failed to create user.'}
 
       return {error: null, user: newUser}
     }

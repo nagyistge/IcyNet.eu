@@ -4,7 +4,7 @@ import Models from './models'
 const perPage = 8
 
 function slugify (title) {
-  return title.toLowerCase().replace(/\W/g, '-').substring(0, 16)
+  return title.toLowerCase().replace(/\W/g, '-').substring(0, 32)
 }
 
 async function cleanArticle (entry, shortenContent = false) {
