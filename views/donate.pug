@@ -36,7 +36,7 @@ block body
 							label(for="mcinclude") Include Minecraft Username
 							input(id="mcinclude" type="checkbox")
 							.mcuname(style="display: none;")
-								input(id="mcusername")
+								input(id="mcusername", autocomplete="off")
 					.buttoncont
 						a.button.donate(name="submit", onclick="$(this).closest('form').submit()")
 							i.fa.fa-fw.fa-paypal

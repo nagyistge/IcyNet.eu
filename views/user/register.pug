@@ -26,7 +26,7 @@ block body
 						label(for="password") Password
 						input(type="password", name="password", id="password")
 						label(for="password_repeat") Repeat Password
-						input(type="password", name="password_repeat", id="password_repeat")
+						input(type="password", name="password_repeat", id="password_repeat", autocomplete="off")
 						div#repeatcheck(style="display: none")
 						if recaptcha
 							script(src='https://www.google.com/recaptcha/api.js')
