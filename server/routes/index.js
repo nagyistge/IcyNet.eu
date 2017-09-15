@@ -636,14 +636,11 @@ router.get('/docs/:name', wrap(async (req, res, next) => {
     return next()
   }
 
-  try {
-    doc = fs.readFileSync(doc, {encoding: 'utf8'})
-  } catch (e) {
-    return next(e)
-  }
-
-  res.header('Cache-Control', 'max-age=' + 7 * 24 * 60 * 60 * 1000) // 1 week
-  res.render('document', {doc: doc})
+  fs.readFile(doc, {encoding: 'utf8'}, (err, contents) => {
+    if (err) return next(err)
+    res.header('Cache-Control', 'max-age=' + 7 * 24 * 60 * 60 * 1000) // 1 week
+    res.render('document', {doc: contents})
+  })
 }))
 
 /*

@@ -8,13 +8,11 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "css": "mkdir -p build/style && stylus -o build/style src/style/*.styl",
     "css:watch": "mkdir -p build/style && stylus -w -o build/style src/style/*.styl",
-    "js:main": "mkdir -p build/script && browserify src/script/main.js -o build/script/main.js && uglifyjs --overwrite build/script/main.js",
-    "js:main:watch": "mkdir -p build/script && watchify src/script/main.js -o build/script/main.js",
-    "js:admin": "mkdir -p build/script && browserify src/script/admin.js -o build/script/admin.js && uglifyjs --overwrite build/script/admin.js",
-    "js:admin:watch": "mkdir -p build/script && watchify src/script/admin.js -o build/script/admin.js",
-    "watch": "concurrently --kill-others \"npm run css:watch\" \"npm run js:main:watch\" \"npm run js:admin:watch\"",
+    "js": "webpack",
+    "js:watch": "webpack -w",
+    "watch": "concurrently --kill-others \"npm run css:watch\" \"npm run js:watch\"",
     "clean": "rm -rf build/",
-    "build": "npm run clean && npm run css && npm run js:main && npm run js:admin"
+    "build": "npm run clean && npm run css && npm run js"
   },
   "repository": {
     "type": "git",
@@ -59,15 +57,14 @@
     "uuid": "^3.1.0"
   },
   "devDependencies": {
-    "browserify": "^14.4.0",
     "concurrently": "^3.5.0",
     "eslint-plugin-import": "^2.7.0",
     "jquery": "^3.2.1",
     "mustache": "^2.3.0",
     "standard": "^10.0.3",
-    "uglify-js": "^1.3.5",
+    "uglifyjs-webpack-plugin": "^0.4.6",
     "watch": "^1.0.2",
-    "watchify": "^3.9.0"
+    "webpack": "^3.6.0"
   },
   "standard": {
     "env": {

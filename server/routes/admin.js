@@ -1,9 +1,7 @@
 import express from 'express'
-import config from '../../scripts/load-config'
 import wrap from '../../scripts/asyncRoute'
 import {User} from '../api'
 import API from '../api/admin'
-import News from '../api/news'
 
 const router = express.Router()
 const apiRouter = express.Router()
