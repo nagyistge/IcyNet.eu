@@ -6,6 +6,7 @@ import qs from 'querystring'
 import oauth from 'oauth-libre'
 import path from 'path'
 import url from 'url'
+import uuidV1 from 'uuid/v1'
 
 const imgdir = path.join(__dirname, '../../', 'usercontent', 'images')
 
@@ -48,7 +49,8 @@ const API = {
       let udataLimited = Object.assign({
         activated: 1,
         created_at: new Date(),
-        updated_at: new Date()
+        updated_at: new Date(),
+        uuid: uuidV1()
       }, data)
 
       // Check if the username is already taken

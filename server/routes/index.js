@@ -655,9 +655,9 @@ function newsPrivilege (req, res, next) {
   next()
 }
 
-router.get('/news/compose', newsPrivilege, formKeep, wrap(async (req, res) => {
+router.get('/news/compose', newsPrivilege, formKeep, (req, res) => {
   res.render('news/composer')
-}))
+})
 
 router.post('/news/compose', newsPrivilege, wrap(async (req, res) => {
   if (req.body.csrf !== req.session.csrf) {
@@ -708,11 +708,11 @@ router.get('/news/', wrap(async (req, res) => {
 }))
 
 // Render partials
-router.get('/partials/:view', wrap(async (req, res, next) => {
+router.get('/partials/:view', (req, res, next) => {
   if (!req.params.view) return next()
 
   res.render('user/partials/' + req.params.view)
-}))
+})
 
 /*
   =========
@@ -720,10 +720,10 @@ router.get('/partials/:view', wrap(async (req, res, next) => {
   =========
 */
 
-router.get('/logout', wrap(async (req, res) => {
+router.get('/logout', (req, res) => {
   req.session.destroy()
   res.redirect('/')
-}))
+})
 
 // User activation endpoint (emailed link)
 router.get('/activate/:token', wrap(async (req, res) => {

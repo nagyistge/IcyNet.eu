@@ -41,6 +41,7 @@ router.get('/user', oauth.bearer, wrap(async (req, res) => {
 
   let udata = {
     id: user.id,
+    uuid: user.uuid,
     username: user.username,
     display_name: user.display_name,
     avatar_file: user.avatar_file

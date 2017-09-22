@@ -8,6 +8,7 @@ import crypto from 'crypto'
 import notp from 'notp'
 import base32 from 'thirty-two'
 import emailer from './emailer'
+import uuidV1 from 'uuid/v1'
 
 import Promise from 'bluebird'
 const fs = Promise.promisifyAll(require('fs'))
@@ -350,6 +351,7 @@ const API = {
         let data = Object.assign(regdata, {
           created_at: new Date(),
           updated_at: new Date(),
+          uuid: uuidV1(),
           activated: email ? 0 : 1
         })
 
