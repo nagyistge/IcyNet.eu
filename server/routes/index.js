@@ -418,8 +418,8 @@ router.post('/register', accountLimiter, wrap(async (req, res, next) => {
 
   // 4th Check: Password length
   let password = req.body.password
-  if (!password || password.length < 8 || password.length > 32) {
-    return formError(req, res, 'Invalid password! Keep it between 8 and 32 characters!')
+  if (!password || password.length < 8) {
+    return formError(req, res, 'Invalid password! Please use at least 8 characters!')
   }
 
   // 5th Check: Password match
@@ -531,8 +531,8 @@ router.post('/user/manage/password', accountLimiter, wrap(async (req, res, next)
   }
 
   let password = req.body.password
-  if (!password || password.length < 8 || password.length > 32) {
-    return formError(req, res, 'Invalid password! Keep it between 8 and 32 characters!')
+  if (!password || password.length < 8) {
+    return formError(req, res, 'Invalid password! Please use at least 8 characters!')
   }
 
   let passwordAgain = req.body.password_repeat
