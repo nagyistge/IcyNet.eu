@@ -418,7 +418,7 @@ router.post('/register', accountLimiter, wrap(async (req, res, next) => {
 
   // 4th Check: Password length
   let password = req.body.password
-  if (!password || password.length < 8 || password.length > 32) {
+  if (!password || password.length < 8) {
     return formError(req, res, 'Invalid password! Keep it between 8 and 32 characters!')
   }
 
@@ -531,7 +531,7 @@ router.post('/user/manage/password', accountLimiter, wrap(async (req, res, next)
   }
 
   let password = req.body.password
-  if (!password || password.length < 8 || password.length > 32) {
+  if (!password || password.length < 8) {
     return formError(req, res, 'Invalid password! Keep it between 8 and 32 characters!')
   }
 
