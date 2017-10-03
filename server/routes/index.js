@@ -13,6 +13,7 @@ import emailer from '../api/emailer'
 import apiRouter from './api'
 import oauthRouter from './oauth2'
 import adminRouter from './admin'
+import mcRouter from './minecraft'
 
 let router = express.Router()
 
@@ -739,6 +740,7 @@ router.get('/activate/:token', wrap(async (req, res) => {
 
 router.use('/api', apiRouter)
 router.use('/admin', adminRouter)
+router.use('/mc', mcRouter)
 
 /*
   NO ROUTES BEYOND THIS POINT
