@@ -78,6 +78,18 @@ class Subscription extends Model {
   }
 }
 
+class MinecraftMember extends Model {
+  static get tableName () {
+    return 'mc_member'
+  }
+}
+
+class MinecraftToken extends Model {
+  static get tableName () {
+    return 'mc_verify'
+  }
+}
+
 module.exports = {
   User: User,
   External: External,
@@ -91,5 +103,7 @@ module.exports = {
   Ban: Ban,
   News: News,
   Donation: Donation,
-  Subscription: Subscription
+  Subscription: Subscription,
+  MinecraftMember: MinecraftMember,
+  MinecraftToken: MinecraftToken
 }

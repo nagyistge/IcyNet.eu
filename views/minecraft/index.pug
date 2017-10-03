@@ -1,0 +1,17 @@
+extends ../layout.pug
+block title
+	|Icy Network - Minecraft Server
+
+block body
+	.wrapper
+		.boxcont
+			.box#totpcheck
+				h1 Minecraft Server
+				p Link your Icy Network account with your Minecraft account on our server
+				if token
+					p Run the following command on the Minecraft Server:
+					code /verify #{token}
+				else
+					p You've already logged in as 
+						b= mcu.name
+
